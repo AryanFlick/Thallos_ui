@@ -1,0 +1,89 @@
+.scroll-stack-scroller {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: visible;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: auto; /* Changed from smooth for better performance */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  will-change: scroll-position;
+  /* Optimize scrolling performance */
+  contain: layout style paint;
+}
+
+.scroll-stack-inner {
+  padding: 10vh 2rem 25vh; /* Reduced padding for tighter spacing */
+  min-height: 100vh;
+}
+
+.scroll-stack-card {
+  transform-origin: top center;
+  will-change: transform, filter;
+  backface-visibility: hidden;
+  transform-style: preserve-3d;
+  box-shadow:
+    0 0 0 1px rgba(139, 92, 246, 0.1),
+    0 10px 40px rgba(139, 92, 246, 0.08),
+    0 30px 80px rgba(0, 0, 0, 0.4);
+  height: auto;
+  min-height: 20rem; /* Reduced from 22rem for tighter cards */
+  width: 90%;
+  max-width: 800px;
+  margin: 20px auto; /* Reduced margin from 30px for tighter spacing */
+  padding: 2rem; /* Reduced padding from 2.5rem */
+  border-radius: 24px; /* Reduced from 32px for tighter look */
+  box-sizing: border-box;
+  /* Improve mobile performance */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(139, 92, 246, 0.02) 50%, transparent 100%),
+    linear-gradient(to bottom, rgba(20, 20, 30, 0.95), rgba(10, 10, 20, 0.98));
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  backdrop-filter: blur(20px) saturate(150%);
+  transition: box-shadow 0.2s ease, border-color 0.2s ease; /* Faster transitions */
+  /* Performance optimizations */
+  contain: layout style paint;
+  isolation: isolate;
+}
+
+.scroll-stack-card:hover {
+  box-shadow:
+    0 0 0 1px rgba(139, 92, 246, 0.2),
+    0 15px 50px rgba(139, 92, 246, 0.15),
+    0 40px 100px rgba(0, 0, 0, 0.5);
+  border-color: rgba(139, 92, 246, 0.25);
+}
+
+.scroll-stack-end {
+  width: 100%;
+  height: 1px;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+  .scroll-stack-inner {
+    padding: 8vh 1rem 20vh; /* Even tighter on mobile */
+  }
+  
+  .scroll-stack-card {
+    width: 95%;
+    margin: 15px auto; /* Tighter spacing on mobile */
+    padding: 1.5rem; /* Reduced padding on mobile */
+    min-height: 18rem; /* Smaller cards on mobile */
+    border-radius: 20px;
+  }
+}
+
+/* Performance: Reduce repaints during scroll */
+.scroll-stack-card * {
+  pointer-events: none;
+}
+
+.scroll-stack-card {
+  pointer-events: auto;
+}
