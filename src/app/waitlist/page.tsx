@@ -67,7 +67,7 @@ export default function WaitlistPage() {
                   ✓ Thank you for joining our waitlist!
                 </p>
                 <p className="text-gray-400 text-sm mt-1">
-                  We'll notify you when Thallos is ready.
+                  We&apos;ll notify you when Thallos is ready.
                 </p>
               </div>
               <button

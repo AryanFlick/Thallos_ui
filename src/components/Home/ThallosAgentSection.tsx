@@ -19,8 +19,7 @@ const fadeInUp = {
   hidden: { opacity: 0, y: 30 },
   show: { 
     opacity: 1, 
-    y: 0, 
-    transition: { duration: 0.6, ease: [0.22, 1, 0.36, 1] } 
+    y: 0
   }
 };
 
@@ -28,8 +27,7 @@ const slideIn = {
   hidden: { opacity: 0, x: -20 },
   show: { 
     opacity: 1, 
-    x: 0, 
-    transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } 
+    x: 0
   }
 };
 
@@ -89,7 +87,8 @@ export default function ThallosAgentSection() {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSubmit(e as any);
+      e.preventDefault();
+      router.push('/waitlist');
     }
   };
 
@@ -114,6 +113,7 @@ export default function ThallosAgentSection() {
             whileInView="show"
             viewport={{ once: true }}
             variants={fadeInUp}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <motion.div 
               className="mb-8"
@@ -147,6 +147,7 @@ export default function ThallosAgentSection() {
             whileInView="show"
             viewport={{ once: true }}
             variants={fadeInUp}
+            transition={{ duration: 0.6, ease: "easeOut" }}
           >
             <div 
               className="relative group w-full max-w-2xl"

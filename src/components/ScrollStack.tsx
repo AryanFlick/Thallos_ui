@@ -71,7 +71,7 @@ const ScrollStack = ({
     const stackPositionPx = parsePercentage(stackPosition, containerHeight);
     const scaleEndPositionPx = parsePercentage(scaleEndPosition, containerHeight);
 
-    const endElement = scroller.querySelector('.scroll-stack-end');
+    const endElement = scroller.querySelector('.scroll-stack-end') as HTMLElement;
     const endElementTop = endElement ? endElement.offsetTop : 0;
 
     cardsRef.current.forEach((card, i) => {
@@ -227,7 +227,8 @@ const ScrollStack = ({
     lenisRef.current = lenis;
 
     // Store autoplay cleanup
-    (lenisRef.current as any).stopAutoplay = stopAutoplay;
+    const lenisWithAutoplay = lenisRef.current as Lenis & { stopAutoplay?: () => void };
+    lenisWithAutoplay.stopAutoplay = stopAutoplay;
 
     return lenis;
   }, [handleScroll]);
@@ -251,17 +252,18 @@ const ScrollStack = ({
       card.style.transformOrigin = 'top center';
       card.style.backfaceVisibility = 'hidden';
       card.style.transform = 'translateZ(0)';
-      (card.style as any).webkitTransform = 'translateZ(0)';
+      (card.style as CSSStyleDeclaration & { webkitTransform: string }).webkitTransform = 'translateZ(0)';
       card.style.perspective = '1000px';
-      (card.style as any).webkitPerspective = '1000px';
+      (card.style as CSSStyleDeclaration & { webkitPerspective: string }).webkitPerspective = '1000px';
     });
 
     setupLenis();
     updateCardTransforms();
 
     return () => {
-      if ((lenisRef.current as any)?.stopAutoplay) {
-        (lenisRef.current as any).stopAutoplay();
+      const lenisWithAutoplay = lenisRef.current as Lenis & { stopAutoplay?: () => void };
+      if (lenisWithAutoplay?.stopAutoplay) {
+        lenisWithAutoplay.stopAutoplay();
       }
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
