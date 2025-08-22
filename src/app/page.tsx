@@ -5,6 +5,7 @@ import WhyGoBeyond from '@/components/WhyGoBeyond';
 import AboutSection from '@/components/Home/AboutSection';
 import StrategiesSection from '@/components/Home/StrategiesSection';
 import CallToAction from '@/components/Home/CallToAction';
+import Footer from '@/components/Home/Footer';
 
 export default function Home() {
   return (
@@ -29,6 +30,9 @@ export default function Home() {
 
       {/* Call to Action */}
       <CallToAction />
+
+      {/* Footer with Box Split Animation */}
+      <Footer />
     </main>
   );
 }
