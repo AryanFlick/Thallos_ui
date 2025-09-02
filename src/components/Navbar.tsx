@@ -2,12 +2,31 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { supabase } from '@/lib/supabase';
+import { User } from '@supabase/supabase-js';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  // Check for user authentication
+  useEffect(() => {
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+    };
+    getUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -37,11 +56,19 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY, isMobileMenuOpen]);
 
-  const navItems = [
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/';
+  };
+
+  // Different nav items based on authentication status
+  const navItems = user ? [
+    { name: 'Agent', href: '/chat' },
+  ] : [
     { name: 'About', href: '#about' },
     { name: 'Strategies', href: '#strategies' },
-    { name: 'Dashboard', href: '#dashboard' },
-    { name: 'Docs', href: '#docs' },
+    { name: 'Blog', href: '#blog' },
+    { name: 'Agent', href: '/login' },
     { name: 'Education', href: '#education' },
   ];
 
@@ -102,19 +129,47 @@ export default function Navbar() {
               ))}
             </div>
 
-                               {/* Desktop CTA Button */}
-                   <Link
-                     href="/waitlist"
-                     className={`hidden md:inline-block bg-gradient-to-r from-purple-600/80 to-purple-500/80 backdrop-blur-xl border border-purple-400/20 text-white hover:from-purple-500/90 hover:to-purple-400/90 transition-all duration-300 font-semibold rounded-full shadow-lg shadow-purple-900/30 hover:shadow-purple-900/50 hover:scale-105 relative group overflow-hidden ${
-                       isScrolled
-                         ? 'px-4 py-1.5 text-sm'
-                         : 'px-5 py-2 text-base'
-                     }`}
-                   >
-                     <span className="relative z-10">Join Waitlist</span>
-                     <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                     <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-purple-400 rounded-full opacity-20 group-hover:opacity-40 blur transition-all duration-300 -z-10"></div>
-                   </Link>
+            {/* Desktop Auth Buttons */}
+            <div className="hidden md:flex items-center gap-x-3">
+              {user ? (
+                // Logged in - show logout button
+                <button
+                  onClick={handleSignOut}
+                  className={`text-gray-300 hover:text-purple-300 transition-all duration-300 font-medium relative group ${
+                    isScrolled ? 'text-sm' : 'text-base'
+                  }`}
+                >
+                  <span className="relative z-10">Logout</span>
+                  <div className="absolute -inset-x-2 -inset-y-1 bg-purple-500/10 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100"></div>
+                </button>
+              ) : (
+                // Not logged in - show login and waitlist buttons
+                <>
+                  <Link
+                    href="/login"
+                    className={`text-gray-300 hover:text-purple-300 transition-all duration-300 font-medium relative group ${
+                      isScrolled ? 'text-sm' : 'text-base'
+                    }`}
+                  >
+                    <span className="relative z-10">Login</span>
+                    <div className="absolute -inset-x-2 -inset-y-1 bg-purple-500/10 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100"></div>
+                  </Link>
+
+                  <Link
+                    href="/waitlist"
+                    className={`bg-gradient-to-r from-purple-600/80 to-purple-500/80 backdrop-blur-xl border border-purple-400/20 text-white hover:from-purple-500/90 hover:to-purple-400/90 transition-all duration-300 font-semibold rounded-full shadow-lg shadow-purple-900/30 hover:shadow-purple-900/50 hover:scale-105 relative group overflow-hidden ${
+                      isScrolled
+                        ? 'px-4 py-1.5 text-sm'
+                        : 'px-5 py-2 text-base'
+                    }`}
+                  >
+                    <span className="relative z-10">Join Waitlist</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-purple-400 rounded-full opacity-20 group-hover:opacity-40 blur transition-all duration-300 -z-10"></div>
+                  </Link>
+                </>
+              )}
+            </div>
 
             {/* Mobile Menu Button */}
             <button
@@ -148,7 +203,7 @@ export default function Navbar() {
             </button>
           </div>
 
-          {/* Mobile Menu */}
+                    {/* Mobile Menu */}
           {isMobileMenuOpen && (
             <div className="md:hidden absolute top-full left-0 right-0 bg-black/95 border-t border-purple-900/20 backdrop-blur-xl">
               <div className="px-6 py-4 space-y-4">
@@ -162,13 +217,39 @@ export default function Navbar() {
                     {item.name}
                   </Link>
                 ))}
-                                       <Link
-                         href="/waitlist"
-                         onClick={() => setIsMobileMenuOpen(false)}
-                         className="block w-full text-center bg-gradient-to-r from-purple-600/80 to-purple-500/80 backdrop-blur-xl border border-purple-400/20 text-white hover:from-purple-500/90 hover:to-purple-400/90 transition-all duration-300 font-semibold rounded-full py-3 px-6 mt-4 shadow-lg shadow-purple-900/30 hover:shadow-purple-900/50"
-                       >
-                         Join Waitlist
-                       </Link>
+                
+                {/* Mobile Auth Buttons */}
+                {user ? (
+                  // Logged in - show logout button
+                  <button
+                    onClick={() => {
+                      setIsMobileMenuOpen(false);
+                      handleSignOut();
+                    }}
+                    className="block w-full text-center text-gray-300 hover:text-purple-300 transition-colors font-medium py-2 border-t border-purple-900/20 pt-4"
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  // Not logged in - show login and waitlist buttons
+                  <>
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block text-gray-300 hover:text-purple-300 transition-colors font-medium py-2 border-t border-purple-900/20 pt-4"
+                    >
+                      Login
+                    </Link>
+                    
+                    <Link
+                      href="/waitlist"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block w-full text-center bg-gradient-to-r from-purple-600/80 to-purple-500/80 backdrop-blur-xl border border-purple-400/20 text-white hover:from-purple-500/90 hover:to-purple-400/90 transition-all duration-300 font-semibold rounded-full py-3 px-6 mt-4 shadow-lg shadow-purple-900/30 hover:shadow-purple-900/50"
+                    >
+                      Join Waitlist
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           )}

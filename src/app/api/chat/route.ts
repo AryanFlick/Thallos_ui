@@ -1,0 +1,156 @@
+import { NextRequest, NextResponse } from 'next/server';
+import OpenAI from 'openai';
+import { RATE_LIMITS, getClientIP } from '@/lib/rateLimit';
+import { supabase } from '@/lib/supabase';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function POST(request: NextRequest) {
+  try {
+    const { message, conversationHistory = [] } = await request.json();
+
+    if (!message) {
+      return NextResponse.json({ error: 'Message is required' }, { status: 400 });
+    }
+
+    if (!process.env.OPENAI_API_KEY) {
+      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
+    }
+
+    // Get user from authorization header or session
+    const authHeader = request.headers.get('authorization');
+    let userId: string | null = null;
+    
+    if (authHeader?.startsWith('Bearer ')) {
+      try {
+        const token = authHeader.substring(7);
+        const { data: { user } } = await supabase.auth.getUser(token);
+        userId = user?.id || null;
+      } catch (error) {
+        console.warn('Failed to get user from token:', error);
+      }
+    }
+
+    // Apply rate limiting
+    const clientIP = getClientIP(request);
+    let rateLimitResult;
+
+    if (userId) {
+      // User-based rate limiting (higher limits for authenticated users)
+      rateLimitResult = await RATE_LIMITS.AUTHENTICATED_USER.checkLimit({
+        maxRequests: 30,
+        windowMs: 60 * 1000,
+        identifier: userId,
+        type: 'user'
+      });
+    } else {
+      // IP-based rate limiting for unauthenticated users
+      rateLimitResult = await RATE_LIMITS.IP_BASED.checkLimit({
+        maxRequests: 10,
+        windowMs: 60 * 1000,
+        identifier: clientIP,
+        type: 'ip'
+      });
+    }
+
+    if (!rateLimitResult.success) {
+      return NextResponse.json(
+        { 
+          error: rateLimitResult.message || 'Rate limit exceeded',
+          rateLimitInfo: {
+            remaining: rateLimitResult.remaining,
+            resetTime: rateLimitResult.resetTime
+          }
+        },
+        { 
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+            'X-RateLimit-Reset': rateLimitResult.resetTime.toString(),
+            'Retry-After': Math.ceil((rateLimitResult.resetTime - Date.now()) / 1000).toString()
+          }
+        }
+      );
+    }
+
+    // System prompt for Thallos AI Agent
+    const systemPrompt = `You are Thallos AI, an institutional-grade DeFi assistant specialized in decentralized finance strategies, blockchain analysis, and institutional cryptocurrency solutions.
+
+Your expertise includes:
+- DeFi protocols and yield strategies
+- Risk management in decentralized finance
+- Institutional cryptocurrency investment approaches
+- Blockchain analytics and market analysis
+- Regulatory compliance in DeFi
+- Portfolio optimization with digital assets
+
+Always provide:
+- Professional, institutional-level insights
+- Data-driven analysis when possible
+- Risk considerations for any strategies discussed
+- Compliance and regulatory awareness
+- Clear, actionable recommendations
+
+Maintain a professional tone suitable for institutional clients while being helpful and informative.`;
+
+    // Prepare messages for OpenAI
+    const messages = [
+      { role: 'system', content: systemPrompt },
+      ...conversationHistory.map((msg: { isUser: boolean; text: string }) => ({
+        role: msg.isUser ? 'user' : 'assistant',
+        content: msg.text
+      })),
+      { role: 'user', content: message }
+    ];
+
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: messages as Array<{ role: 'system' | 'user' | 'assistant'; content: string }>,
+      max_tokens: 1000,
+      temperature: 0.7,
+      stream: false,
+    });
+
+    const response = completion.choices[0]?.message?.content;
+
+    if (!response) {
+      throw new Error('No response from OpenAI');
+    }
+
+    return NextResponse.json(
+      { response },
+      {
+        headers: {
+          'X-RateLimit-Remaining': rateLimitResult.remaining.toString(),
+          'X-RateLimit-Reset': rateLimitResult.resetTime.toString()
+        }
+      }
+    );
+
+  } catch (error: unknown) {
+    console.error('OpenAI API error:', error);
+    
+    const errorObj = error as { error?: { code?: string } };
+    if (errorObj?.error?.code === 'insufficient_quota') {
+      return NextResponse.json(
+        { error: 'OpenAI API quota exceeded. Please check your billing.' },
+        { status: 429 }
+      );
+    }
+    
+    if (errorObj?.error?.code === 'invalid_api_key') {
+      return NextResponse.json(
+        { error: 'Invalid OpenAI API key. Please check your configuration.' },
+        { status: 401 }
+      );
+    }
+
+    return NextResponse.json(
+      { error: 'Failed to get response from AI. Please try again.' },
+      { status: 500 }
+    );
+  }
+}
+

@@ -2,8 +2,9 @@ import Hero from '@/components/Home/Hero';
 import OverviewSection from '@/components/Home/OverviewSection';
 import ThallosAgentSection from '@/components/Home/ThallosAgentSection';
 import WhyGoBeyond from '@/components/WhyGoBeyond';
-import AboutSection from '@/components/Home/AboutSection';
 import StrategiesSection from '@/components/Home/StrategiesSection';
+import BlogSection from '@/components/Home/BlogSection';
+import FAQSection from '@/components/Home/FAQSection';
 import CallToAction from '@/components/Home/CallToAction';
 import Footer from '@/components/Home/Footer';
 
@@ -22,11 +23,14 @@ export default function Home() {
       {/* Thallos Agent Section */}
       <ThallosAgentSection />
 
-      {/* About Section */}
-      <AboutSection />
-
       {/* Strategies Section */}
       <StrategiesSection />
+
+      {/* Blog Section */}
+      <BlogSection />
+
+      {/* FAQ Section */}
+      <FAQSection />
 
       {/* Call to Action */}
       <CallToAction />
