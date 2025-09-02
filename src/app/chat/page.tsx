@@ -78,6 +78,18 @@ export default function ChatPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Force black background on body for chat page
+  useEffect(() => {
+    document.body.style.background = '#000000';
+    document.documentElement.style.background = '#000000';
+    
+    return () => {
+      // Reset on cleanup (when leaving page)
+      document.body.style.background = '';
+      document.documentElement.style.background = '';
+    };
+  }, []);
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
   };
@@ -327,9 +339,11 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="h-screen bg-black flex flex-col">
+    <div className="min-h-screen h-screen bg-black flex flex-col overflow-hidden chat-page-body">
+      {/* Full page background overlay */}
+      <div className="fixed inset-0 bg-black -z-50"></div>
       {/* Fixed Navbar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-xl border-b border-purple-800/30">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-purple-800/30">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4">
             <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
@@ -365,7 +379,7 @@ export default function ChatPage() {
       </div>
 
       {/* Main Content Area with top padding */}
-      <div className="flex flex-1 pt-20">
+      <div className="flex flex-1 pt-20 bg-black min-h-0">
         {/* Sidebar */}
         <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative z-40 w-80 h-full bg-gradient-to-b from-gray-900/95 to-gray-800/95 border-r border-purple-800/30 transition-transform duration-300`}>
           <div className="flex flex-col h-full">
@@ -413,9 +427,9 @@ export default function ChatPage() {
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col">
+        <div className="flex-1 flex flex-col bg-black min-h-0">
           {/* Mobile Menu Button */}
-          <div className="md:hidden p-4 border-b border-purple-800/30">
+          <div className="md:hidden p-4 border-b border-purple-800/30 bg-black">
             <button
               onClick={() => setSidebarOpen(true)}
               className="text-white hover:text-purple-400 transition-colors"
@@ -427,7 +441,7 @@ export default function ChatPage() {
           </div>
 
           {/* Chat Content */}
-          <div className="flex-1 flex flex-col min-h-0">
+          <div className="flex-1 flex flex-col min-h-0 bg-black">
             {messages.length === 0 ? (
               /* Welcome Screen */
               <div className="flex-1 flex flex-col items-center justify-center p-6">
@@ -449,8 +463,10 @@ export default function ChatPage() {
               </div>
             ) : (
               /* Messages */
-              <div className="flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
-                <div className="max-w-4xl mx-auto px-4 py-6 space-y-6" style={{ minHeight: 'calc(100vh - 300px)' }}>
+              <div className="flex-1 overflow-y-auto bg-black relative" style={{ minHeight: 0 }}>
+                {/* Background overlay to ensure black coverage */}
+                <div className="absolute inset-0 bg-black -z-10"></div>
+                <div className="max-w-4xl mx-auto px-4 py-6 space-y-6 relative z-10" style={{ minHeight: 'calc(100vh - 200px)' }}>
             <AnimatePresence>
               {messages.map((message) => (
                 <motion.div
@@ -541,8 +557,8 @@ export default function ChatPage() {
             )}
 
             {/* Input Area - Fixed at bottom */}
-            <div className="border-t border-purple-800/30 bg-gradient-to-r from-gray-900/95 via-gray-800/95 to-gray-900/95">
-              <div className="max-w-4xl mx-auto p-4">
+            <div className="border-t border-purple-800/30 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 relative">
+              <div className="max-w-4xl mx-auto p-4 bg-transparent">
                 <div className="flex items-end gap-3">
                   <div className="flex-1 relative">
                 <textarea

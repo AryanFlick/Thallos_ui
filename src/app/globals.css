@@ -60,6 +60,17 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Force black background for chat page */
+.chat-page-body {
+  background: #000000 !important;
+  min-height: 100vh;
+}
+
+/* Ensure all chat containers maintain black background */
+.chat-container * {
+  background-color: inherit;
+}
+
 /* Custom grid background pattern */
 .bg-grid-slate-100 {
   background-image: linear-gradient(to right, rgb(241 245 249) 1px, transparent 1px),
