@@ -3,9 +3,14 @@ import OpenAI from 'openai';
 import { RATE_LIMITS, getClientIP } from '@/lib/rateLimit';
 import { supabase } from '@/lib/supabase';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client safely
+const getOpenAIClient = () => {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) {
+    throw new Error('OpenAI API key not configured');
+  }
+  return new OpenAI({ apiKey });
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,9 +20,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Message is required' }, { status: 400 });
     }
 
-    if (!process.env.OPENAI_API_KEY) {
-      return NextResponse.json({ error: 'OpenAI API key not configured' }, { status: 500 });
-    }
+    // Initialize OpenAI client
+    const openai = getOpenAIClient();
 
     // Get user from authorization header or session
     const authHeader = request.headers.get('authorization');
