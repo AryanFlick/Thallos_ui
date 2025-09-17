@@ -3,11 +3,11 @@ import DarkVeil from '@/components/DarkVeil';
 export default function Hero() {
   return (
     <section className="relative min-h-screen flex items-center bg-black">
-      {/* DarkVeil Background with purple theme - More visible */}
+      {/* DarkVeil Background with yellow theme - More visible */}
       <div className="absolute inset-0 z-0 opacity-70">
         <DarkVeil 
           speed={1.2}
-          hueShift={270}
+          hueShift={60}
           noiseIntensity={0.03}
           warpAmount={0.15}
           scanlineIntensity={0.02}
