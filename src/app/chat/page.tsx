@@ -287,7 +287,6 @@ export default function ChatPage() {
         // Handle rate limiting specifically
         if (response.status === 429) {
           const remaining = response.headers.get('X-RateLimit-Remaining');
-          const resetTime = response.headers.get('X-RateLimit-Reset');
           const retryAfter = response.headers.get('Retry-After');
           
           throw new Error(

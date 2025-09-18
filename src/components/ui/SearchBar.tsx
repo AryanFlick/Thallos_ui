@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { theme } from '@/styles/theme';
 
 export default function SearchBar() {
   // Search prompts for typewriter effect
-  const searchPrompts = [
+  const searchPrompts = useMemo(() => [
     "What's ETH borrow utilization on Aave right now?",
     "Backtest ETH staking vs. Curve LP since Jan 2023.",
     "Show me top whale inflows this week."
-  ];
+  ], []);
 
   const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   const [currentText, setCurrentText] = useState('');
@@ -60,7 +60,7 @@ export default function SearchBar() {
         return () => clearTimeout(typeTimeout);
       }
     }
-  }, [currentText, isDeleting, isWaiting, currentPromptIndex, searchPrompts]);
+  }, [currentText, isDeleting, isWaiting, currentPromptIndex, searchPrompts, isUserTyping]);
 
   const handleSearch = () => {
     window.location.href = '/waitlist';

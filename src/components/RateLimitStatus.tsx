@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 
@@ -21,7 +21,7 @@ export default function RateLimitStatus({ user }: RateLimitStatusProps) {
   const [usage, setUsage] = useState<UsageStats | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const fetchUsageStats = async () => {
+  const fetchUsageStats = useCallback(async () => {
     if (!user) return;
 
     setLoading(true);
@@ -63,7 +63,7 @@ export default function RateLimitStatus({ user }: RateLimitStatusProps) {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchUsageStats();
@@ -71,7 +71,7 @@ export default function RateLimitStatus({ user }: RateLimitStatusProps) {
     // Refresh every 30 seconds
     const interval = setInterval(fetchUsageStats, 30000);
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user, fetchUsageStats]);
 
   if (!user || !usage) return null;
 

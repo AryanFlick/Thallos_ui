@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useMotionValueEvent, useScroll } from "motion/react";
 import { motion } from "motion/react";
 import { cn } from "@/lib/utils";
@@ -12,12 +12,12 @@ export const StickyScroll = ({
   content: {
     title: string;
     description: string;
-    content?: React.ReactNode | any;
+    content?: React.ReactNode;
   }[];
   contentClassName?: string;
 }) => {
   const [activeCard, setActiveCard] = React.useState(0);
-  const ref = useRef<any>(null);
+  const ref = useRef<HTMLDivElement>(null);
   const { scrollYProgress } = useScroll({
     // uncomment line 22 and comment line 23 if you DONT want the overflow container and want to have it change on the entire page scroll
     // target: ref
@@ -27,13 +27,11 @@ export const StickyScroll = ({
   const cardLength = content.length;
 
   // Add state to track scroll direction and improve timing
-  const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
   const [lastScrollProgress, setLastScrollProgress] = useState(0);
 
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     // Track scroll direction
     const direction = latest > lastScrollProgress ? 'down' : 'up';
-    setScrollDirection(direction);
     setLastScrollProgress(latest);
 
     // Calculate which card should be active based on scroll progress
@@ -67,6 +65,13 @@ export const StickyScroll = ({
         backgroundColor: backgroundColors[activeCard % backgroundColors.length],
       }}
       className="relative flex h-screen justify-start space-x-16 overflow-y-auto rounded-md p-16 scroll-smooth"
+      style={{
+        backgroundImage: `
+          linear-gradient(rgba(75, 85, 99, 0.3) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(75, 85, 99, 0.3) 1px, transparent 1px)
+        `,
+        backgroundSize: '40px 40px'
+      }}
       ref={ref}
     >
       <div className="div relative flex items-start px-4">

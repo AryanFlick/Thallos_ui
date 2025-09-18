@@ -174,7 +174,7 @@ export default function BlogSection() {
               className="flex transition-transform duration-500 ease-in-out"
               animate={{ x: `-${currentIndex * (100 / itemsPerView)}%` }}
             >
-              {blogPosts.map((post, index) => (
+              {blogPosts.map((post) => (
                 <div key={post.id} className="w-full sm:w-1/2 lg:w-1/3 flex-shrink-0 px-3">
                   <motion.article
                     initial={{ opacity: 0, y: 30 }}

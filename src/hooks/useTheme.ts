@@ -1,24 +1,10 @@
-import { theme, type Theme } from '@/styles/theme';
+import { theme } from '@/styles/theme';
 
 // Hook to access theme values in React components
 export const useTheme = () => {
   return {
     theme,
     colors: theme,
-    
-    // Helper functions for common color operations
-    getColor: (path: string) => {
-      return path.split('.').reduce((obj: any, key) => obj?.[key], theme);
-    },
-    
-    // Generate Tailwind classes from theme values
-    getTailwindClass: (colorPath: string, property: 'bg' | 'text' | 'border' | 'shadow' = 'bg') => {
-      const color = colorPath.split('.').reduce((obj: any, key) => obj?.[key], theme);
-      if (typeof color === 'string' && color.startsWith('#')) {
-        return `${property}-[${color}]`;
-      }
-      return '';
-    },
     
     // Get CSS variable
     getCSSVar: (varName: string) => `var(--${varName})`,

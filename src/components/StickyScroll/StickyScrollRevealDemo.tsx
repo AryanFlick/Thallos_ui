@@ -36,7 +36,7 @@ const content = [
         <div className="text-center z-10 space-y-8 scale-110">
           <div className="bg-black/60 backdrop-blur-xl rounded-2xl p-8 border border-green-400/30">
             <div className="text-green-400 text-lg mb-3">Query:</div>
-            <div className="text-white text-xl font-medium">"What's ETH utilization on Aave?"</div>
+            <div className="text-white text-xl font-medium">&quot;What&apos;s ETH utilization on Aave?&quot;</div>
             <div className="mt-6 pt-6 border-t border-green-400/30">
               <div className="text-green-300 text-lg">ETH Supply: 2.3M • Borrow: 1.8M • Util: 78%</div>
             </div>
@@ -104,7 +104,7 @@ const content = [
             </div>
             {/* Terminal Content */}
             <div className="p-8 space-y-4 font-mono text-lg">
-              <div className="text-green-400 text-xl">$ thallos query "top defi yields"</div>
+              <div className="text-green-400 text-xl">$ thallos query &quot;top defi yields&quot;</div>
               <div className="text-gray-300 text-lg space-y-2">
                 <div>✓ Aave USDC: 4.2% APY</div>
                 <div>✓ Compound ETH: 3.8% APY</div>

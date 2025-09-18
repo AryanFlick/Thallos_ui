@@ -169,8 +169,8 @@ export const theme = {
 } as const;
 
 // Helper function to get theme colors with TypeScript support
-export const getThemeColor = (path: string) => {
-  return path.split('.').reduce((obj: any, key) => obj?.[key], theme);
+export const getThemeColor = (path: string): unknown => {
+  return path.split('.').reduce((obj: Record<string, unknown>, key) => obj?.[key] as Record<string, unknown>, theme as Record<string, unknown>);
 };
 
 // CSS Custom Properties for dynamic theming

@@ -1,5 +1,6 @@
 import Hero from '@/components/Home/Hero';
 import { StickyScrollRevealDemo } from '@/components/StickyScroll/StickyScrollRevealDemo';
+import { BentoGridDemo } from '@/components/BentoGrid/BentoGridDemo';
 import OverviewSection from '@/components/Home/OverviewSection';
 import ThallosAgentSection from '@/components/Home/ThallosAgentSection';
 import WhyGoBeyond from '@/components/WhyGoBeyond';
@@ -17,6 +18,9 @@ export default function Home() {
 
       {/* Sticky Scroll Reveal Demo */}
       <StickyScrollRevealDemo />
+
+      {/* Bento Grid Section */}
+      <BentoGridDemo />
 
       {/* Why Go Beyond Section */}
       <WhyGoBeyond />
