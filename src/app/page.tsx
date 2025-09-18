@@ -1,4 +1,5 @@
 import Hero from '@/components/Home/Hero';
+import { StickyScrollRevealDemo } from '@/components/StickyScroll/StickyScrollRevealDemo';
 import OverviewSection from '@/components/Home/OverviewSection';
 import ThallosAgentSection from '@/components/Home/ThallosAgentSection';
 import WhyGoBeyond from '@/components/WhyGoBeyond';
@@ -13,6 +14,9 @@ export default function Home() {
     <main className="min-h-screen bg-black relative overflow-hidden">
       {/* Hero Section */}
       <Hero />
+
+      {/* Sticky Scroll Reveal Demo */}
+      <StickyScrollRevealDemo />
 
       {/* Why Go Beyond Section */}
       <WhyGoBeyond />

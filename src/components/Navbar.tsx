@@ -100,10 +100,10 @@ export default function Navbar() {
                   isScrolled ? 'text-xl' : 'text-2xl'
                 }`}
               >
-                <span className="relative z-20 bg-gradient-to-r from-yellow-400 via-yellow-300 to-yellow-400 bg-clip-text text-transparent hover:from-yellow-300 hover:via-yellow-200 hover:to-yellow-300 transition-all duration-300">
+                <span className="relative z-20 bg-gradient-to-r from-green-500 via-green-400 to-green-500 bg-clip-text text-transparent hover:from-green-400 hover:via-green-300 hover:to-green-400 transition-all duration-300">
                   Thallos
                 </span>
-                <div className="absolute -inset-2 bg-gradient-to-r from-yellow-600/20 to-yellow-400/20 rounded-lg opacity-0 group-hover:opacity-100 blur-sm transition-all duration-300 z-10"></div>
+                <div className="absolute -inset-2 bg-gradient-to-r from-green-700/20 to-green-500/20 rounded-lg opacity-0 group-hover:opacity-100 blur-sm transition-all duration-300 z-10"></div>
               </Link>
             </div>
 
@@ -119,7 +119,7 @@ export default function Navbar() {
                 >
                   <span className="relative z-10">{item.name}</span>
                   <div className="absolute -inset-x-2 -inset-y-1 bg-white/5 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100"></div>
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-yellow-500 to-yellow-400 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-green-600 to-green-500 scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
                 </Link>
               ))}
             </div>
@@ -141,7 +141,7 @@ export default function Navbar() {
                 // Not logged in - show Request Access button
                 <Link
                   href="/waitlist"
-                  className={`bg-gradient-to-r from-yellow-600/80 to-yellow-500/80 backdrop-blur-xl border border-yellow-400/20 text-white hover:from-yellow-500/90 hover:to-yellow-400/90 transition-all duration-300 font-semibold rounded-full shadow-lg shadow-yellow-900/30 hover:shadow-yellow-900/50 hover:scale-105 relative group overflow-hidden ${
+                  className={`bg-gradient-to-r from-green-800/80 to-green-700/80 backdrop-blur-xl border border-green-600/20 text-white hover:from-green-700/90 hover:to-green-600/90 transition-all duration-300 font-semibold rounded-full shadow-lg shadow-green-950/30 hover:shadow-green-950/50 hover:scale-105 relative group overflow-hidden ${
                     isScrolled
                       ? 'px-4 py-1.5 text-sm'
                       : 'px-5 py-2 text-base'
@@ -149,7 +149,7 @@ export default function Navbar() {
                 >
                   <span className="relative z-10">Request Access</span>
                   <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute -inset-1 bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full opacity-20 group-hover:opacity-40 blur transition-all duration-300 -z-10"></div>
+                  <div className="absolute -inset-1 bg-gradient-to-r from-green-700 to-green-500 rounded-full opacity-20 group-hover:opacity-40 blur transition-all duration-300 -z-10"></div>
                 </Link>
               )}
             </div>
@@ -157,7 +157,7 @@ export default function Navbar() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden text-white hover:text-yellow-400 transition-colors"
+              className="md:hidden text-white hover:text-green-500 transition-colors"
               aria-label="Menu"
             >
               <svg
@@ -218,7 +218,7 @@ export default function Navbar() {
                   <Link
                     href="/waitlist"
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="block w-full text-center bg-gradient-to-r from-yellow-600/80 to-yellow-500/80 backdrop-blur-xl border border-yellow-400/20 text-white hover:from-yellow-500/90 hover:to-yellow-400/90 transition-all duration-300 font-semibold rounded-full py-3 px-6 mt-4 shadow-lg shadow-yellow-900/30 hover:shadow-yellow-900/50"
+                    className="block w-full text-center bg-gradient-to-r from-green-800/80 to-green-700/80 backdrop-blur-xl border border-green-600/20 text-white hover:from-green-700/90 hover:to-green-600/90 transition-all duration-300 font-semibold rounded-full py-3 px-6 mt-4 shadow-lg shadow-green-950/30 hover:shadow-green-950/50"
                   >
                     Request Access
                   </Link>
@@ -229,16 +229,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Floating indicator when scrolled */}
-      {isScrolled && (
-        <div className="absolute left-1/2 transform -translate-x-1/2 -bottom-3">
-          <div className="relative">
-            <div className="w-16 h-1 bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600 rounded-full opacity-60 animate-pulse" />
-            <div className="absolute inset-0 w-16 h-1 bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600 rounded-full opacity-30 blur-sm animate-pulse" />
-            <div className="absolute left-1/2 -translate-x-1/2 -top-1 w-2 h-2 bg-yellow-400 rounded-full opacity-80 animate-bounce" style={{ animationDelay: '0.5s' }} />
-          </div>
-        </div>
-      )}
     </nav>
   );
 }
