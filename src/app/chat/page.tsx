@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
 import RateLimitStatus from '@/components/RateLimitStatus';
+import WalletPromptModal from '@/components/WalletPromptModal';
 
 interface Message {
   id: string;
@@ -38,9 +39,10 @@ export default function ChatPage() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showWalletPrompt, setShowWalletPrompt] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Check authentication status
+  // Check authentication status and wallet connection
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -48,6 +50,8 @@ export default function ChatPage() {
         window.location.href = '/login';
       } else {
         setUser(user);
+        // Check if user has connected wallets
+        checkWalletConnection(user.id);
       }
     };
     checkUser();
@@ -57,11 +61,36 @@ export default function ChatPage() {
         window.location.href = '/login';
       } else {
         setUser(session.user);
+        checkWalletConnection(session.user.id);
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
+
+  // Check if user has any wallets connected
+  const checkWalletConnection = async (userId: string) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const response = await fetch("/api/wallets", {
+        headers: {
+          "Authorization": `Bearer ${session.access_token}`,
+        },
+      });
+
+      const result = await response.json();
+
+      // Show wallet prompt if no wallets connected
+      if (response.ok && (!result.wallets || result.wallets.length === 0)) {
+        // Show prompt after a short delay
+        setTimeout(() => setShowWalletPrompt(true), 1500);
+      }
+    } catch (error) {
+      console.error("Error checking wallet connection:", error);
+    }
+  };
 
   // Auto scroll to bottom
   useEffect(() => {
@@ -341,14 +370,22 @@ export default function ChatPage() {
     <div className="min-h-screen h-screen bg-black flex flex-col overflow-hidden chat-page-body">
       {/* Full page background overlay */}
       <div className="fixed inset-0 bg-black -z-50"></div>
+      
+      {/* Wallet Prompt Modal */}
+      {showWalletPrompt && user && (
+        <WalletPromptModal 
+          userId={user.id} 
+          onClose={() => setShowWalletPrompt(false)} 
+        />
+      )}
       {/* Fixed Navbar */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-yellow-800/30">
+      <div className="fixed top-0 left-0 right-0 z-[90] bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-yellow-800/30">
         <div className="flex items-center justify-between px-6 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-yellow-300 bg-clip-text text-transparent">
+            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
               Thallos
             </Link>
-            <div className="h-6 w-px bg-yellow-800/50"></div>
+            <div className="h-6 w-px bg-emerald-800/50"></div>
             <h1 className="text-xl font-semibold text-white">Agent</h1>
           </div>
           
@@ -356,7 +393,7 @@ export default function ChatPage() {
             {/* New Chat Button */}
             <button
               onClick={createNewChat}
-              className="bg-yellow-600/20 hover:bg-yellow-600/30 border border-yellow-600/40 text-yellow-300 hover:text-white px-4 py-2 rounded-lg text-sm transition-all duration-300 flex items-center gap-2"
+              className="bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-600/40 text-emerald-300 hover:text-white px-4 py-2 rounded-lg text-sm transition-all duration-300 flex items-center gap-2"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -369,7 +406,7 @@ export default function ChatPage() {
             </div>
             <button
               onClick={handleSignOut}
-              className="text-gray-400 hover:text-yellow-400 transition-colors duration-300 text-sm"
+              className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-sm"
             >
               Sign Out
             </button>
@@ -477,10 +514,8 @@ export default function ChatPage() {
                 >
                         <div className={`flex items-start gap-3 max-w-[80%] ${message.isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                           {!message.isUser && (
-                            <div className="w-8 h-8 bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
-                              <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                              </svg>
+                            <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-white text-sm">
+                              T
                             </div>
                           )}
                           <div
@@ -514,7 +549,7 @@ export default function ChatPage() {
                             </div>
                           </div>
                           {message.isUser && (
-                            <div className="w-8 h-8 bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
+                            <div className="w-8 h-8 bg-gradient-to-br from-gray-700 to-gray-600 rounded-full flex items-center justify-center flex-shrink-0">
                               <svg className="w-4 h-4 text-gray-300" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                               </svg>

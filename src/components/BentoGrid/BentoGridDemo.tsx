@@ -3,10 +3,12 @@ import React from "react";
 import { BentoGrid, BentoGridItem } from "../ui/bento-grid";
 import {
   IconChartLine,
-  IconTerminal2,
-  IconDatabase,
   IconBolt,
+  IconWorld,
+  IconBrandApple,
 } from "@tabler/icons-react";
+import { GlobeVisualization } from "./GlobeVisualization";
+import LogoScroller from "../LogoScroller";
 
 export function BentoGridDemo() {
   return (
@@ -24,7 +26,7 @@ export function BentoGridDemo() {
         </div>
 
         {/* Bento Grid */}
-        <BentoGrid className="max-w-6xl mx-auto md:auto-rows-[20rem]">
+        <BentoGrid className="max-w-6xl mx-auto md:auto-rows-[28rem]">
           {items.map((item, i) => (
             <BentoGridItem
               key={i}
@@ -61,44 +63,9 @@ const DataVisualization = () => (
   </div>
 );
 
-const TerminalInterface = () => (
-  <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-black border border-green-500/30 p-4 relative overflow-hidden">
-    <div className="w-full">
-      {/* Terminal Header */}
-      <div className="flex items-center space-x-2 mb-4">
-        <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-        <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-        <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-        <span className="text-gray-400 text-xs ml-2">thallos-terminal</span>
-      </div>
-      {/* Terminal Content */}
-      <div className="font-mono text-sm space-y-2">
-        <div className="text-green-400">$ thallos analyze --protocol aave</div>
-        <div className="text-gray-300">✓ Fetching protocol data...</div>
-        <div className="text-gray-300">✓ Analyzing risk metrics...</div>
-        <div className="text-green-400 animate-pulse">$ _</div>
-      </div>
-    </div>
-  </div>
-);
-
-const DatabaseConnections = () => (
-  <div className="flex flex-1 w-full h-full min-h-[6rem] rounded-xl bg-gradient-to-br from-purple-900/20 to-blue-800/20 border border-purple-500/20 p-6 relative overflow-hidden">
-    <div className="absolute inset-0 bg-dot-white/[0.1] [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"></div>
-    <div className="relative z-10 w-full">
-      <div className="grid grid-cols-2 gap-4 h-full">
-        <div className="space-y-2">
-          <div className="w-full h-2 bg-purple-500/30 rounded animate-pulse"></div>
-          <div className="w-3/4 h-2 bg-blue-500/30 rounded animate-pulse"></div>
-          <div className="w-1/2 h-2 bg-green-500/30 rounded animate-pulse"></div>
-        </div>
-        <div className="flex items-center justify-center">
-          <div className="w-16 h-16 border-2 border-purple-400/50 rounded-full flex items-center justify-center">
-            <IconDatabase className="w-8 h-8 text-purple-400" />
-          </div>
-        </div>
-      </div>
-    </div>
+const PowerfulModels = () => (
+  <div className="flex flex-1 w-full h-full min-h-[6rem] relative overflow-hidden">
+    <LogoScroller />
   </div>
 );
 
@@ -130,18 +97,18 @@ const items = [
     icon: <IconChartLine className="h-4 w-4 text-neutral-500" />,
   },
   {
-    title: "Terminal Interface",
-    description: "Command-line access to DeFi protocols with natural language queries and instant results.",
-    header: <TerminalInterface />,
+    title: "Powerful Models",
+    description: "Deeply integrated with Aave, GMX, DeFi Llama and more — with zero data retention.",
+    header: <PowerfulModels />,
     className: "md:col-span-1",
-    icon: <IconTerminal2 className="h-4 w-4 text-neutral-500" />,
+    icon: <IconBrandApple className="h-4 w-4 text-neutral-500" />,
   },
   {
-    title: "Multi-Chain Integration",
-    description: "Connect to 50+ blockchains and 200+ protocols through unified API endpoints.",
-    header: <DatabaseConnections />,
+    title: "Global Network",
+    description: "Real-time connections across major financial hubs and DeFi protocols worldwide.",
+    header: <GlobeVisualization />,
     className: "md:col-span-1",
-    icon: <IconDatabase className="h-4 w-4 text-neutral-500" />,
+    icon: <IconWorld className="h-4 w-4 text-neutral-500" />,
   },
   {
     title: "Performance Analytics",

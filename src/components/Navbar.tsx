@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
+import UserProfileDropdown from './UserProfileDropdown';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -64,6 +65,7 @@ export default function Navbar() {
   // Different nav items based on authentication status
   const navItems = user ? [
     { name: 'Agent', href: '/chat' },
+    { name: 'Wallet', href: '/wallet' },
   ] : [
     { name: 'Product', href: '#product' },
     { name: 'Why Thallos', href: '#why-thallos' },
@@ -73,7 +75,7 @@ export default function Navbar() {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out ${
+      className={`fixed top-0 left-0 right-0 z-[100] transition-all duration-500 ease-in-out ${
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
@@ -94,17 +96,17 @@ export default function Navbar() {
           <div className={`flex items-center transition-all duration-500 max-w-7xl mx-auto ${isScrolled ? 'px-6' : ''}`}>
             {/* Logo - Left */}
             <div className={`flex-shrink-0 ${isScrolled ? 'mr-8' : ''}`}>
-              <Link
-                href="/"
-                className={`font-bold relative group transition-all duration-300 ${
-                  isScrolled ? 'text-xl' : 'text-2xl'
-                }`}
-              >
+            <Link
+              href="/"
+              className={`font-bold relative group transition-all duration-300 ${
+                isScrolled ? 'text-xl' : 'text-2xl'
+              }`}
+            >
                 <span className="relative z-20 bg-gradient-to-r from-green-500 via-green-400 to-green-500 bg-clip-text text-transparent hover:from-green-400 hover:via-green-300 hover:to-green-400 transition-all duration-300">
-                  Thallos
-                </span>
+                Thallos
+              </span>
                 <div className="absolute -inset-2 bg-gradient-to-r from-green-700/20 to-green-500/20 rounded-lg opacity-0 group-hover:opacity-100 blur-sm transition-all duration-300 z-10"></div>
-              </Link>
+            </Link>
             </div>
 
             {/* Navigation Items - Center */}
@@ -124,33 +126,25 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Right Side - Request Access */}
+            {/* Right Side - User Profile or Request Access */}
             <div className={`hidden md:flex items-center flex-shrink-0 ${isScrolled ? 'ml-8' : ''}`}>
               {user ? (
-                // Logged in - show logout button
-                <button
-                  onClick={handleSignOut}
-                  className={`text-white/80 hover:text-white transition-all duration-300 font-medium relative group ${
-                    isScrolled ? 'text-sm' : 'text-base'
-                  }`}
-                >
-                  <span className="relative z-10">Logout</span>
-                  <div className="absolute -inset-x-2 -inset-y-1 bg-white/5 rounded-md opacity-0 group-hover:opacity-100 transition-all duration-300 scale-95 group-hover:scale-100"></div>
-                </button>
+                // Logged in - show user profile dropdown
+                <UserProfileDropdown user={user} onSignOut={handleSignOut} />
               ) : (
                 // Not logged in - show Request Access button
-                <Link
-                  href="/waitlist"
+              <Link
+                href="/waitlist"
                   className={`bg-gradient-to-r from-green-800/80 to-green-700/80 backdrop-blur-xl border border-green-600/20 text-white hover:from-green-700/90 hover:to-green-600/90 transition-all duration-300 font-semibold rounded-full shadow-lg shadow-green-950/30 hover:shadow-green-950/50 hover:scale-105 relative group overflow-hidden ${
-                    isScrolled
-                      ? 'px-4 py-1.5 text-sm'
-                      : 'px-5 py-2 text-base'
-                  }`}
-                >
+                  isScrolled
+                    ? 'px-4 py-1.5 text-sm'
+                    : 'px-5 py-2 text-base'
+                }`}
+              >
                   <span className="relative z-10">Request Access</span>
-                  <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                   <div className="absolute -inset-1 bg-gradient-to-r from-green-700 to-green-500 rounded-full opacity-20 group-hover:opacity-40 blur transition-all duration-300 -z-10"></div>
-                </Link>
+              </Link>
               )}
             </div>
 
@@ -203,25 +197,36 @@ export default function Navbar() {
                 
                 {/* Mobile Auth Buttons */}
                 {user ? (
-                  // Logged in - show logout button
-                  <button
-                    onClick={() => {
-                      setIsMobileMenuOpen(false);
-                      handleSignOut();
-                    }}
-                    className="block w-full text-center text-white/80 hover:text-white transition-colors font-medium py-2 border-t border-white/20 pt-4"
-                  >
-                    Logout
-                  </button>
+                  <div className="border-t border-white/20 pt-4 space-y-2">
+                    <div className="px-4 py-3 bg-white/5 rounded-lg">
+                      <p className="text-white font-medium text-sm">{user.email}</p>
+                    </div>
+                    <Link
+                      href="/wallet"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block w-full text-center text-white/80 hover:text-white transition-colors font-medium py-2"
+                    >
+                      Wallet Settings
+                    </Link>
+                    <button
+                      onClick={() => {
+                        setIsMobileMenuOpen(false);
+                        handleSignOut();
+                      }}
+                      className="block w-full text-center text-red-400 hover:text-red-300 transition-colors font-medium py-2"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
                 ) : (
                   // Not logged in - show Request Access button
-                  <Link
-                    href="/waitlist"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                <Link
+                  href="/waitlist"
+                  onClick={() => setIsMobileMenuOpen(false)}
                     className="block w-full text-center bg-gradient-to-r from-green-800/80 to-green-700/80 backdrop-blur-xl border border-green-600/20 text-white hover:from-green-700/90 hover:to-green-600/90 transition-all duration-300 font-semibold rounded-full py-3 px-6 mt-4 shadow-lg shadow-green-950/30 hover:shadow-green-950/50"
-                  >
+                >
                     Request Access
-                  </Link>
+                </Link>
                 )}
               </div>
             </div>

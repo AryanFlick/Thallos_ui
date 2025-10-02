@@ -26,7 +26,7 @@ export default function Hero() {
       style={{ backgroundColor: colors.background }}
     >
       {/* Background Ripple Effect */}
-      <div className="absolute inset-0 z-0">
+      <div className="absolute inset-0 z-[1]">
         <BackgroundRippleEffect 
           rows={12}
           cols={30}
@@ -35,10 +35,10 @@ export default function Hero() {
       </div>
       
       {/* Subtle overlay for better text readability */}
-      <div className="absolute inset-0 z-10 bg-black/20" />
+      <div className="absolute inset-0 z-[2] bg-black/20" />
       
       {/* Content */}
-      <div className="relative z-20 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
+      <div className="relative z-[3] mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 sm:py-8 lg:py-12">
         <div className="mx-auto max-w-6xl text-center">
           
           {/* Main Heading */}
