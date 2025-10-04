@@ -12,7 +12,7 @@ export default function Footer() {
             {/* Brand Section */}
             <div className="col-span-1 md:col-span-2">
               <div className="flex items-center space-x-2 mb-4">
-                <h3 className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
+                <h3 className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-300 bg-clip-text text-transparent">
                   Thallos
                 </h3>
               </div>
@@ -23,7 +23,7 @@ export default function Footer() {
                 {/* Social Links */}
                 <a 
                   href="#" 
-                  className="text-gray-500 hover:text-purple-400 transition-colors duration-300"
+                  className="text-gray-500 hover:text-emerald-400 transition-colors duration-300"
                   aria-label="Twitter"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -32,7 +32,7 @@ export default function Footer() {
                 </a>
                 <a 
                   href="#" 
-                  className="text-gray-500 hover:text-purple-400 transition-colors duration-300"
+                  className="text-gray-500 hover:text-emerald-400 transition-colors duration-300"
                   aria-label="LinkedIn"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -41,7 +41,7 @@ export default function Footer() {
                 </a>
                 <a 
                   href="#" 
-                  className="text-gray-500 hover:text-purple-400 transition-colors duration-300"
+                  className="text-gray-500 hover:text-emerald-400 transition-colors duration-300"
                   aria-label="Discord"
                 >
                   <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -56,22 +56,22 @@ export default function Footer() {
               <h4 className="text-white font-semibold mb-4">Product</h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="#overview" className="text-gray-400 hover:text-purple-400 transition-colors duration-300 text-sm">
+                  <a href="#overview" className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-sm">
                     Overview
                   </a>
                 </li>
                 <li>
-                  <a href="#strategies" className="text-gray-400 hover:text-purple-400 transition-colors duration-300 text-sm">
+                  <a href="#strategies" className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-sm">
                     Strategies
                   </a>
                 </li>
                 <li>
-                  <a href="#agent" className="text-gray-400 hover:text-purple-400 transition-colors duration-300 text-sm">
+                  <a href="#agent" className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-sm">
                     Thallos Agent
                   </a>
                 </li>
                 <li>
-                  <a href="/waitlist" className="text-gray-400 hover:text-purple-400 transition-colors duration-300 text-sm">
+                  <a href="/waitlist" className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-sm">
                     Join Alpha
                   </a>
                 </li>
@@ -83,23 +83,18 @@ export default function Footer() {
               <h4 className="text-white font-semibold mb-4">Company</h4>
               <ul className="space-y-2">
                 <li>
-                  <a href="#about" className="text-gray-400 hover:text-purple-400 transition-colors duration-300 text-sm">
+                  <a href="#about" className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-sm">
                     About
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors duration-300 text-sm">
+                  <a href="#" className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-sm">
                     Careers
                   </a>
                 </li>
                 <li>
-                  <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors duration-300 text-sm">
+                  <a href="#" className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-sm">
                     Contact
-                  </a>
-                </li>
-                <li>
-                  <a href="#" className="text-gray-400 hover:text-purple-400 transition-colors duration-300 text-sm">
-                    Blog
                   </a>
                 </li>
               </ul>
@@ -107,19 +102,19 @@ export default function Footer() {
           </div>
 
           {/* Bottom Section */}
-          <div className="mt-12 pt-8 border-t border-purple-900/20">
+          <div className="mt-12 pt-8 border-t border-emerald-900/20">
             <div className="flex flex-col md:flex-row justify-between items-center">
               <div className="text-gray-500 text-sm">
                 © 2024 Thallos. All rights reserved.
               </div>
               <div className="flex space-x-6 mt-4 md:mt-0">
-                <a href="#" className="text-gray-500 hover:text-purple-400 transition-colors duration-300 text-sm">
+                <a href="#" className="text-gray-500 hover:text-emerald-400 transition-colors duration-300 text-sm">
                   Privacy Policy
                 </a>
-                <a href="#" className="text-gray-500 hover:text-purple-400 transition-colors duration-300 text-sm">
+                <a href="#" className="text-gray-500 hover:text-emerald-400 transition-colors duration-300 text-sm">
                   Terms of Service
                 </a>
-                <a href="#" className="text-gray-500 hover:text-purple-400 transition-colors duration-300 text-sm">
+                <a href="#" className="text-gray-500 hover:text-emerald-400 transition-colors duration-300 text-sm">
                   Risk Disclosure
                 </a>
               </div>
@@ -137,8 +132,8 @@ export default function Footer() {
           typeSpeedMsPerChar={150}
           className="min-h-[120px] sm:min-h-[160px] md:min-h-[200px]"
           backgroundClass="bg-black"
-          boxColorClass="bg-gradient-to-t from-purple-900/60 to-purple-800/40"
-          textClassName="font-bold text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-purple-300 to-purple-400 animate-shimmer tracking-wider relative text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl"
+          boxColorClass="bg-gradient-to-t from-emerald-900/60 to-emerald-800/40"
+          textClassName="font-bold text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 via-emerald-300 to-emerald-400 animate-shimmer tracking-wider relative text-3xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl"
         />
       </section>
     </footer>

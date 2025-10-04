@@ -37,6 +37,46 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Check monthly query limit for free users
+    if (userId) {
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      
+      // Get user's subscription status
+      const { data: subscription } = await supabase
+        .from('user_subscriptions')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+      
+      // Check if user is on Pro plan
+      const isPro = subscription?.status === 'active' && subscription?.plan === 'pro';
+      
+      if (!isPro) {
+        // Count queries this month
+        const { data: queries } = await supabase
+          .from('user_api_usage')
+          .select('id')
+          .eq('user_id', userId)
+          .gte('created_at', startOfMonth.toISOString());
+        
+        const queryCount = queries?.length || 0;
+        
+        if (queryCount >= 15) {
+          return NextResponse.json(
+            { 
+              error: 'Monthly query limit reached',
+              message: 'You have reached your monthly limit of 15 queries. Please upgrade to Pro for unlimited access.',
+              upgradeUrl: '/profile?tab=billing',
+              queriesUsed: queryCount,
+              monthlyLimit: 15
+            },
+            { status: 429 }
+          );
+        }
+      }
+    }
+
     // Apply rate limiting
     const clientIP = getClientIP(request);
     let rateLimitResult;
@@ -121,6 +161,22 @@ Maintain a professional tone suitable for institutional clients while being help
 
     if (!response) {
       throw new Error('No response from OpenAI');
+    }
+
+    // Track successful query AFTER getting response
+    if (userId) {
+      try {
+        await supabase.from('user_api_usage').insert({
+          user_id: userId,
+          endpoint: '/api/chat',
+          method: 'POST',
+          status_code: 200,
+          created_at: new Date().toISOString()
+        });
+      } catch (trackingError) {
+        console.warn('Failed to track query:', trackingError);
+        // Don't fail the request if tracking fails
+      }
     }
 
     return NextResponse.json(

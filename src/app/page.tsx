@@ -1,11 +1,7 @@
 import Hero from '@/components/Home/Hero';
-import { StickyScrollRevealDemo } from '@/components/StickyScroll/StickyScrollRevealDemo';
 import { BentoGridDemo } from '@/components/BentoGrid/BentoGridDemo';
-import OverviewSection from '@/components/Home/OverviewSection';
-import ThallosAgentSection from '@/components/Home/ThallosAgentSection';
-import WhyGoBeyond from '@/components/WhyGoBeyond';
+import OnchainTradersSection from '@/components/Home/OnchainTradersSection';
 import StrategiesSection from '@/components/Home/StrategiesSection';
-import BlogSection from '@/components/Home/BlogSection';
 import FAQSection from '@/components/Home/FAQSection';
 import CallToAction from '@/components/Home/CallToAction';
 import Footer from '@/components/Home/Footer';
@@ -16,26 +12,14 @@ export default function Home() {
       {/* Hero Section */}
       <Hero />
 
-      {/* Sticky Scroll Reveal Demo */}
-      <StickyScrollRevealDemo />
-
       {/* Bento Grid Section */}
       <BentoGridDemo />
 
-      {/* Why Go Beyond Section */}
-      <WhyGoBeyond />
-
-      {/* Overview Section */}
-      <OverviewSection />
-
-      {/* Thallos Agent Section */}
-      <ThallosAgentSection />
+      {/* Onchain Traders Section */}
+      <OnchainTradersSection />
 
       {/* Strategies Section */}
       <StrategiesSection />
-
-      {/* Blog Section */}
-      <BlogSection />
 
       {/* FAQ Section */}
       <FAQSection />

@@ -1,12 +1,17 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
-import { supabase } from '@/lib/supabase';
-import { User } from '@supabase/supabase-js';
-import RateLimitStatus from '@/components/RateLimitStatus';
-import WalletPromptModal from '@/components/WalletPromptModal';
+import { useState, useEffect } from "react";
+import { createClient, User } from "@supabase/supabase-js";
+import { AnimatePresence, motion } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import WalletPromptModal from "@/components/WalletPromptModal";
+import WalletPortfolio from "@/components/WalletPortfolio";
+
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 interface Message {
   id: string;
@@ -15,14 +20,6 @@ interface Message {
   timestamp: Date;
 }
 
-const placeholderQuestions = [
-  "Ask about DeFi yield strategies...",
-  "Inquire about blockchain analytics...",
-  "Explore institutional crypto solutions...",
-  "Learn about risk management in DeFi...",
-  "Get insights on market trends...",
-];
-
 interface Conversation {
   id: string;
   title: string;
@@ -30,19 +27,28 @@ interface Conversation {
   updated_at: Date;
 }
 
+interface SavedChat {
+  conversation: Conversation;
+  messages: Message[];
+}
+
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [isTyping, setIsTyping] = useState(false);
-  const [currentPlaceholder, setCurrentPlaceholder] = useState(0);
   const [user, setUser] = useState<User | null>(null);
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWalletPrompt, setShowWalletPrompt] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
-  // Check authentication status and wallet connection
+  const handleSignOut = async () => {
+    await supabase.auth.signOut();
+    window.location.href = '/login';
+  };
+
+  // Check user auth
   useEffect(() => {
     const checkUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -51,7 +57,7 @@ export default function ChatPage() {
       } else {
         setUser(user);
         // Check if user has connected wallets
-        checkWalletConnection(user.id);
+        checkWalletConnection();
       }
     };
     checkUser();
@@ -61,7 +67,7 @@ export default function ChatPage() {
         window.location.href = '/login';
       } else {
         setUser(session.user);
-        checkWalletConnection(session.user.id);
+        checkWalletConnection();
       }
     });
 
@@ -69,7 +75,7 @@ export default function ChatPage() {
   }, []);
 
   // Check if user has any wallets connected
-  const checkWalletConnection = async (userId: string) => {
+  const checkWalletConnection = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
@@ -82,126 +88,132 @@ export default function ChatPage() {
 
       const result = await response.json();
 
-      // Show wallet prompt if no wallets connected
-      if (response.ok && (!result.wallets || result.wallets.length === 0)) {
-        // Show prompt after a short delay
-        setTimeout(() => setShowWalletPrompt(true), 1500);
+      if (response.ok && result.wallets) {
+        // Wallet prompt disabled - user can connect via profile page or wallet section
       }
     } catch (error) {
       console.error("Error checking wallet connection:", error);
     }
   };
 
-  // Auto scroll to bottom
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [messages]);
-
-  // Rotate placeholder questions
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentPlaceholder((prev) => (prev + 1) % placeholderQuestions.length);
-    }, 3000);
-    return () => clearInterval(interval);
-  }, []);
-
-  // Force black background on body for chat page
-  useEffect(() => {
-    document.body.style.background = '#000000';
-    document.documentElement.style.background = '#000000';
-    
-    return () => {
-      // Reset on cleanup (when leaving page)
-      document.body.style.background = '';
-      document.documentElement.style.background = '';
-    };
-  }, []);
-
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-  };
-
   const createNewChat = () => {
     setMessages([]);
     setCurrentConversationId(null);
-    setInputValue('');
+    setSidebarOpen(false);
   };
 
-  const saveConversation = async () => {
-    if (!user || messages.length === 0) return;
+  const saveConversation = async (userMsg: Message, aiMsg: Message) => {
+    if (!user) return;
 
     try {
-      // Generate title from first user message
-      const firstUserMessage = messages.find(msg => msg.isUser);
-      const title = firstUserMessage ? 
-        firstUserMessage.text.slice(0, 50) + (firstUserMessage.text.length > 50 ? '...' : '') :
-        'New Chat';
+      const title = userMsg.text.substring(0, 50) + (userMsg.text.length > 50 ? '...' : '');
       
       // Try to save to Supabase first
       try {
-        const { data: conversation, error: convError } = await supabase
-          .from('conversations')
-          .insert({
-            user_id: user.id,
-            title: title
-          })
-          .select()
-          .single();
+        let conversationId = currentConversationId;
 
-        if (convError) throw convError;
+        if (!conversationId) {
+          // Create new conversation
+          const { data, error } = await supabase
+            .from('conversations')
+            .insert({
+              user_id: user.id,
+              title,
+              created_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .select()
+            .single();
 
-        // Save messages to Supabase
-        const messagesData = messages.map(msg => ({
-          conversation_id: conversation.id,
-          content: msg.text,
-          is_user: msg.isUser
-        }));
+          if (error) throw error;
+          
+          conversationId = data.id;
+          setCurrentConversationId(conversationId);
 
-        const { error: msgError } = await supabase
+          // Add to conversations list
+          const newConversation: Conversation = {
+            id: data.id,
+            title: data.title,
+            created_at: new Date(data.created_at),
+            updated_at: new Date(data.updated_at),
+          };
+          setConversations(prev => [newConversation, ...prev.filter(c => c.id !== newConversation.id)]);
+        } else {
+          // Update existing conversation timestamp
+          await supabase
+            .from('conversations')
+            .update({ updated_at: new Date().toISOString() })
+            .eq('id', conversationId);
+
+          // Update in local state
+          setConversations(prev => prev.map(c => 
+            c.id === conversationId 
+              ? { ...c, updated_at: new Date() }
+              : c
+          ));
+        }
+
+        // Save only the new messages
+        const messagesToSave = [
+          {
+            conversation_id: conversationId,
+            is_user: true,
+            content: userMsg.text,
+            created_at: userMsg.timestamp.toISOString(),
+          },
+          {
+            conversation_id: conversationId,
+            is_user: false,
+            content: aiMsg.text,
+            created_at: aiMsg.timestamp.toISOString(),
+          }
+        ];
+
+        const { error: messagesError } = await supabase
           .from('messages')
-          .insert(messagesData);
+          .insert(messagesToSave);
 
-        if (msgError) throw msgError;
+        if (messagesError) {
+          console.warn('Failed to save messages to Supabase:', messagesError);
+        }
 
-        // Update local state
-        const newConversation: Conversation = {
-          id: conversation.id,
-          title: conversation.title,
-          created_at: new Date(conversation.created_at),
-          updated_at: new Date(conversation.updated_at),
-        };
-
-        setConversations(prev => [newConversation, ...prev]);
-        setCurrentConversationId(newConversation.id);
-
-        console.log('Chat saved to Supabase successfully:', newConversation.title);
+        console.log('Messages saved to conversation:', conversationId);
 
       } catch (supabaseError) {
         console.warn('Failed to save to Supabase, falling back to localStorage:', supabaseError);
         
         // Fallback to localStorage
-        const newConversation: Conversation = {
-          id: Date.now().toString(),
-          title,
-          created_at: new Date(),
-          updated_at: new Date(),
-        };
+        let conversationId = currentConversationId;
+        
+        if (!conversationId) {
+          conversationId = Date.now().toString();
+          setCurrentConversationId(conversationId);
+          
+          const newConversation: Conversation = {
+            id: conversationId,
+            title,
+            created_at: new Date(),
+            updated_at: new Date(),
+          };
+          setConversations(prev => [newConversation, ...prev]);
+        }
 
-        setConversations(prev => [newConversation, ...prev]);
-        setCurrentConversationId(newConversation.id);
-
-        // Store in localStorage with user-specific key
+        // Update localStorage
         const userKey = `thallos_chats_${user.id}`;
         const savedChats = JSON.parse(localStorage.getItem(userKey) || '{}');
-        savedChats[newConversation.id] = {
-          conversation: newConversation,
-          messages: messages
-        };
+        
+        if (!savedChats[conversationId]) {
+          savedChats[conversationId] = {
+            conversation: { id: conversationId, title, created_at: new Date(), updated_at: new Date() },
+            messages: []
+          };
+        }
+        
+        savedChats[conversationId].messages.push(userMsg, aiMsg);
+        savedChats[conversationId].conversation.updated_at = new Date();
         localStorage.setItem(userKey, JSON.stringify(savedChats));
 
-        console.log('Chat saved to localStorage:', newConversation.title);
+        console.log('Messages saved to localStorage');
       }
 
     } catch (error) {
@@ -209,10 +221,32 @@ export default function ChatPage() {
     }
   };
 
-  const loadConversation = (conversationId: string) => {
+  const loadConversation = async (conversationId: string) => {
     if (!user) return;
     
     try {
+      // Try to load from Supabase first
+      const { data: messages, error } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+
+      if (!error && messages && messages.length > 0) {
+        const loadedMessages = messages.map(msg => ({
+          id: msg.id,
+          text: msg.content,
+          isUser: msg.is_user,
+          timestamp: new Date(msg.created_at),
+        }));
+        setMessages(loadedMessages);
+        setCurrentConversationId(conversationId);
+        setSidebarOpen(false);
+        console.log('Loaded conversation from Supabase');
+        return;
+      }
+
+      // Fallback to localStorage
       const userKey = `thallos_chats_${user.id}`;
       const savedChats = JSON.parse(localStorage.getItem(userKey) || '{}');
       const chat = savedChats[conversationId];
@@ -220,7 +254,7 @@ export default function ChatPage() {
         setMessages(chat.messages);
         setCurrentConversationId(conversationId);
         setSidebarOpen(false);
-        console.log('Loaded conversation:', chat.conversation.title);
+        console.log('Loaded conversation from localStorage:', chat.conversation.title);
       }
     } catch (error) {
       console.error('Error loading conversation:', error);
@@ -250,7 +284,7 @@ export default function ChatPage() {
             updated_at: new Date(conv.updated_at),
           }));
           setConversations(conversationList);
-          console.log('Loaded conversations from Supabase:', conversationList.length);
+          console.log('Loaded conversations from Supabase');
           return;
         }
       } catch (supabaseError) {
@@ -260,14 +294,12 @@ export default function ChatPage() {
       // Fallback to localStorage
       try {
         const userKey = `thallos_chats_${user.id}`;
-        const savedChats = JSON.parse(localStorage.getItem(userKey) || '{}');
-        const conversationList = Object.values(savedChats as Record<string, { conversation: Conversation }>).map(chat => chat.conversation);
-        setConversations(conversationList.sort((a: Conversation, b: Conversation) => 
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
-        ));
-        console.log('Loaded conversations from localStorage:', conversationList.length);
-      } catch (error) {
-        console.error('Error loading conversations:', error);
+        const savedChats = JSON.parse(localStorage.getItem(userKey) || '{}') as Record<string, SavedChat>;
+        const conversationList = Object.values(savedChats).map((chat) => chat.conversation);
+        setConversations(conversationList);
+        console.log('Loaded conversations from localStorage');
+      } catch (localError) {
+        console.error('Failed to load from localStorage:', localError);
       }
     };
 
@@ -315,6 +347,28 @@ export default function ChatPage() {
         
         // Handle rate limiting specifically
         if (response.status === 429) {
+          // Check if it's the monthly query limit
+          if (errorData.error === 'Monthly query limit reached') {
+            const errorMessage: Message = {
+              id: (Date.now() + 1).toString(),
+              text: `You've reached your monthly limit of ${errorData.monthlyLimit} queries. Upgrade to Pro for unlimited access to Thallos AI.`,
+              isUser: false,
+              timestamp: new Date(),
+            };
+            setMessages(prev => [...prev, errorMessage]);
+            
+            // Show upgrade prompt after a short delay
+            setTimeout(() => {
+              if (confirm('You\'ve reached your monthly query limit. Would you like to upgrade to Pro for unlimited queries?')) {
+                router.push('/profile?section=billing');
+              }
+            }, 500);
+            
+            setIsTyping(false);
+            return;
+          }
+          
+          // Handle regular rate limiting
           const remaining = response.headers.get('X-RateLimit-Remaining');
           const retryAfter = response.headers.get('Retry-After');
           
@@ -335,7 +389,11 @@ export default function ChatPage() {
         isUser: false,
         timestamp: new Date(),
       };
+      
       setMessages(prev => [...prev, aiMessage]);
+      
+      // Auto-save the conversation
+      await saveConversation(userMessage, aiMessage);
       
     } catch (error) {
       console.error('Error getting AI response:', error);
@@ -345,7 +403,11 @@ export default function ChatPage() {
         isUser: false,
         timestamp: new Date(),
       };
+      
       setMessages(prev => [...prev, errorMessage]);
+      
+      // Save even on error to preserve the conversation
+      await saveConversation(userMessage, errorMessage);
     } finally {
       setIsTyping(false);
     }
@@ -367,10 +429,7 @@ export default function ChatPage() {
   }
 
   return (
-    <div className="min-h-screen h-screen bg-black flex flex-col overflow-hidden chat-page-body">
-      {/* Full page background overlay */}
-      <div className="fixed inset-0 bg-black -z-50"></div>
-      
+    <div className="min-h-screen h-screen bg-black flex overflow-hidden">
       {/* Wallet Prompt Modal */}
       {showWalletPrompt && user && (
         <WalletPromptModal 
@@ -378,47 +437,30 @@ export default function ChatPage() {
           onClose={() => setShowWalletPrompt(false)} 
         />
       )}
-      {/* Fixed Navbar */}
-      <div className="fixed top-0 left-0 right-0 z-[90] bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 border-b border-yellow-800/30">
-        <div className="flex items-center justify-between px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Link href="/" className="text-2xl font-bold bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
-              Thallos
-            </Link>
-            <div className="h-6 w-px bg-emerald-800/50"></div>
-            <h1 className="text-xl font-semibold text-white">Agent</h1>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            {/* New Chat Button */}
+
+      {/* Mobile Sidebar Overlay */}
+      {sidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-30 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative z-40 w-72 md:w-80 h-full bg-gradient-to-b from-gray-900 to-black border-r border-emerald-500/20 transition-transform duration-300 flex flex-col pt-16`}>
+        {/* Sidebar Header with New Chat */}
+        <div className="p-4 border-b border-emerald-500/20">
             <button
               onClick={createNewChat}
-              className="bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-600/40 text-emerald-300 hover:text-white px-4 py-2 rounded-lg text-sm transition-all duration-300 flex items-center gap-2"
+            className="w-full bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 text-white px-4 py-3 rounded-lg transition-all duration-300 flex items-center justify-center gap-2 font-medium shadow-lg shadow-emerald-500/20"
             >
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
               </svg>
               New Chat
             </button>
-            
-            <div className="text-sm text-gray-400">
-              {user?.email}
-            </div>
-            <button
-              onClick={handleSignOut}
-              className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-sm"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
       </div>
 
-      {/* Main Content Area with top padding */}
-      <div className="flex flex-1 pt-20 bg-black min-h-0">
-        {/* Sidebar */}
-        <div className={`${sidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0 fixed md:relative z-40 w-80 h-full bg-gradient-to-b from-gray-900/95 to-gray-800/95 border-r border-yellow-800/30 transition-transform duration-300`}>
-          <div className="flex flex-col h-full">
             {/* Chat History */}
             <div className="flex-1 overflow-y-auto p-4">
               <h3 className="text-sm font-semibold text-gray-400 mb-3">Recent Chats</h3>
@@ -429,11 +471,11 @@ export default function ChatPage() {
                     onClick={() => loadConversation(conversation.id)}
                     className={`w-full text-left p-3 rounded-lg text-sm transition-all duration-300 ${
                       currentConversationId === conversation.id
-                        ? 'bg-yellow-600/30 border border-yellow-600/50 text-white'
-                        : 'bg-gray-800/40 hover:bg-gray-700/60 border border-gray-700/30 text-gray-300 hover:text-white'
+                    ? 'bg-emerald-500/20 border border-emerald-500/30 text-white'
+                    : 'bg-gray-800/50 hover:bg-gray-800 border border-gray-700/30 text-gray-300 hover:text-white'
                     }`}
                   >
-                    <p className="truncate">{conversation.title}</p>
+                <p className="truncate font-medium">{conversation.title}</p>
                     <p className="text-xs text-gray-500 mt-1">
                       {new Date(conversation.updated_at).toLocaleDateString()}
                     </p>
@@ -441,43 +483,47 @@ export default function ChatPage() {
             ))}
               </div>
           </div>
-          
-            {/* Rate Limit Status */}
-            <RateLimitStatus user={user} />
+        
+        {/* Wallet Portfolio */}
+        <WalletPortfolio user={user} />
 
-            {/* User Info */}
-            <div className="p-4 border-t border-yellow-800/30">
+        {/* User Info */}
+        <div className="p-4 border-t border-emerald-500/20">
               <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-400 truncate">
+            <Link
+              href="/profile"
+              className="text-sm text-gray-400 truncate hover:text-emerald-400 transition-colors duration-300"
+            >
                   {user?.email}
-                </div>
+            </Link>
                 <button
                   onClick={handleSignOut}
-                  className="text-gray-400 hover:text-yellow-400 transition-colors duration-300 text-sm"
+              className="text-gray-400 hover:text-emerald-400 transition-colors duration-300 text-sm"
                 >
                   Sign Out
                 </button>
-              </div>
             </div>
           </div>
         </div>
 
         {/* Main Chat Area */}
-        <div className="flex-1 flex flex-col bg-black min-h-0">
-          {/* Mobile Menu Button */}
-          <div className="md:hidden p-4 border-b border-yellow-800/30 bg-black">
+      <div className="flex-1 flex flex-col bg-black pt-16 md:pt-16">
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 border-b border-emerald-500/20 bg-gray-900/50">
             <button
               onClick={() => setSidebarOpen(true)}
-              className="text-white hover:text-yellow-400 transition-colors"
+            className="text-white hover:text-emerald-400 transition-colors"
             >
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
               </svg>
             </button>
+          <h1 className="text-lg font-semibold text-white">Thallos AI</h1>
+          <div className="w-6 h-6" /> {/* Spacer for centering */}
           </div>
 
           {/* Chat Content */}
-          <div className="flex-1 flex flex-col min-h-0 bg-black">
+        <div className="flex-1 flex flex-col min-h-0">
             {messages.length === 0 ? (
               /* Welcome Screen */
               <div className="flex-1 flex flex-col items-center justify-center p-6">
@@ -487,22 +533,20 @@ export default function ChatPage() {
                   transition={{ duration: 0.6 }}
                   className="text-center max-w-2xl"
                 >
-                  <div className="w-16 h-16 bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                <div className="w-20 h-20 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full flex items-center justify-center mx-auto mb-6 shadow-lg shadow-emerald-500/30">
+                  <svg className="w-10 h-10 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
                     </svg>
                   </div>
-                  <h1 className="text-4xl font-bold text-white mb-4">Thallos AI</h1>
-                  <p className="text-xl text-gray-300 mb-8">Your institutional DeFi intelligence partner</p>
-                  <p className="text-gray-400">Ask me about yield strategies, risk management, market analysis, and more.</p>
+                <h1 className="text-3xl md:text-4xl font-bold text-white mb-4">Welcome to Thallos AI</h1>
+                <p className="text-lg md:text-xl text-gray-300 mb-8">Your institutional DeFi intelligence partner</p>
+                <p className="text-gray-400 text-sm md:text-base px-4">Ask me about yield strategies, risk management, market analysis, and more.</p>
                 </motion.div>
               </div>
             ) : (
               /* Messages */
-              <div className="flex-1 overflow-y-auto bg-black relative" style={{ minHeight: 0 }}>
-                {/* Background overlay to ensure black coverage */}
-                <div className="absolute inset-0 bg-black -z-10"></div>
-                <div className="max-w-4xl mx-auto px-4 py-6 space-y-6 relative z-10" style={{ minHeight: 'calc(100vh - 200px)' }}>
+            <div className="flex-1 overflow-y-auto">
+              <div className="max-w-4xl mx-auto px-4 py-6 space-y-4">
             <AnimatePresence>
               {messages.map((message) => (
                 <motion.div
@@ -512,37 +556,37 @@ export default function ChatPage() {
                   transition={{ duration: 0.3 }}
                   className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
                 >
-                        <div className={`flex items-start gap-3 max-w-[80%] ${message.isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+                      <div className={`flex items-start gap-3 max-w-full md:max-w-[80%] ${message.isUser ? 'flex-row-reverse' : 'flex-row'}`}>
                           {!message.isUser && (
-                            <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 font-bold text-white text-sm">
-                              T
+                          <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/20">
+                            <span className="text-white font-bold text-sm">T</span>
                             </div>
                           )}
                           <div
-                            className={`p-4 rounded-2xl ${
+                          className={`px-4 py-3 rounded-2xl ${
                       message.isUser
-                                ? 'bg-yellow-600 text-white ml-auto'
-                                : 'bg-gray-800/60 text-gray-100 border border-gray-700/50'
+                              ? 'bg-gradient-to-r from-emerald-600 to-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                              : 'bg-gray-800/80 text-gray-100 border border-gray-700/50'
                             }`}
                           >
-                            <div className="text-sm sm:text-base leading-relaxed prose prose-invert prose-sm max-w-none">
+                          <div className="text-sm md:text-base leading-relaxed">
                               {message.isUser ? (
                                 <p className="whitespace-pre-wrap">{message.text}</p>
                               ) : (
                                 <div
+                                className="prose prose-invert prose-sm max-w-none"
                                   dangerouslySetInnerHTML={{
                                     __html: message.text
-                                      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                                    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-400">$1</strong>')
                                       .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                                      .replace(/`(.*?)`/g, '<code class="bg-gray-700 px-1 py-0.5 rounded text-yellow-300">$1</code>')
+                                    .replace(/`(.*?)`/g, '<code class="bg-gray-700 px-1 py-0.5 rounded text-emerald-300">$1</code>')
                                       .replace(/### (.*?)(\n|$)/g, '<h3 class="text-lg font-bold text-white mt-4 mb-2">$1</h3>')
                                       .replace(/## (.*?)(\n|$)/g, '<h2 class="text-xl font-bold text-white mt-4 mb-2">$1</h2>')
                                       .replace(/# (.*?)(\n|$)/g, '<h1 class="text-2xl font-bold text-white mt-4 mb-2">$1</h1>')
-                                      .replace(/^\d+\.\s/gm, '<span class="text-yellow-400 font-semibold">$&</span>')
-                                      .replace(/^-\s/gm, '<span class="text-yellow-400">•</span> ')
+                                    .replace(/^\d+\.\s/gm, '<span class="text-emerald-400 font-semibold">$&</span>')
+                                    .replace(/^-\s/gm, '<span class="text-emerald-400">•</span> ')
                                       .replace(/\n\n/g, '</p><p class="mt-3">')
                                       .replace(/\n/g, '<br/>')
-                                      .replace(/^(.+)$/, '<p>$1</p>')
                                   }}
                                 />
                               )}
@@ -568,90 +612,55 @@ export default function ChatPage() {
                 exit={{ opacity: 0, y: -20 }}
                 className="flex justify-start"
               >
-                      <div className="flex items-start gap-3 max-w-[80%]">
-                        <div className="w-8 h-8 bg-gradient-to-r from-yellow-600 to-yellow-400 rounded-full flex items-center justify-center flex-shrink-0">
-                          <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09z" />
-                          </svg>
-                        </div>
-                        <div className="bg-gray-800/60 border border-gray-700/50 p-4 rounded-2xl">
-                          <div className="flex space-x-1">
-                            <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-yellow-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-emerald-600 to-emerald-500 rounded-lg flex items-center justify-center flex-shrink-0 shadow-lg shadow-emerald-500/20">
+                        <span className="text-white font-bold text-sm">T</span>
+                      </div>
+                      <div className="bg-gray-800/80 border border-gray-700/50 px-4 py-3 rounded-2xl">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                          <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                           </div>
                   </div>
                 </div>
               </motion.div>
             )}
-            
-            <div ref={messagesEndRef} />
-          </div>
+              </div>
               </div>
             )}
 
-            {/* Input Area - Fixed at bottom */}
-            <div className="border-t border-yellow-800/30 bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 relative">
-              <div className="max-w-4xl mx-auto p-4 bg-transparent">
-                <div className="flex items-end gap-3">
-                  <div className="flex-1 relative">
-                <textarea
+          {/* Input Area */}
+          <div className="border-t border-emerald-500/20 bg-gray-900/50 backdrop-blur-sm p-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex gap-3">
+                <input
+                  type="text"
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
-                      placeholder={placeholderQuestions[currentPlaceholder]}
-                      className="w-full px-4 py-3 pr-12 bg-gray-800/60 border border-gray-600/50 rounded-2xl text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-yellow-500/50 focus:border-yellow-500/50 transition-all duration-300 min-h-[48px] max-h-32"
-                      rows={1}
-                      style={{ height: 'auto' }}
-                      onInput={(e) => {
-                        const target = e.target as HTMLTextAreaElement;
-                        target.style.height = 'auto';
-                        target.style.height = target.scrollHeight + 'px';
-                      }}
+                  placeholder="Ask about DeFi, yield strategies, or market analysis..."
+                  className="flex-1 bg-gray-800/80 text-white placeholder-gray-500 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 border border-gray-700/50"
+                  disabled={isTyping}
                 />
-                
-                {/* Send Button */}
                 <button
                   onClick={() => handleSendMessage()}
                   disabled={!inputValue.trim() || isTyping}
-                      className="absolute bottom-2 right-2 bg-gradient-to-r from-yellow-600 to-yellow-500 text-white p-2 rounded-xl hover:from-yellow-500 hover:to-yellow-400 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-700 hover:to-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg transition-all duration-300 flex items-center gap-2 shadow-lg shadow-emerald-500/20"
                 >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                  <span className="hidden md:inline">Send</span>
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
                   </svg>
                 </button>
-                  </div>
-
-                  {/* Save Chat Button */}
-                  {messages.length > 0 && !currentConversationId && (
-                    <button
-                      onClick={saveConversation}
-                      className="bg-gray-700/60 hover:bg-gray-600/60 border border-gray-600/50 text-gray-300 hover:text-white px-4 py-3 rounded-2xl transition-all duration-300 flex items-center gap-2"
-                    >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0111.186 0z" />
-                      </svg>
-                      Save
-                    </button>
-                  )}
               </div>
-              
-              <p className="text-xs text-gray-500 mt-2 text-center">
+              <div className="mt-2 text-xs text-gray-500 text-center">
                 Press Enter to send • Shift+Enter for new line
-              </p>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      </div>
-
-      {/* Mobile Sidebar Overlay */}
-      {sidebarOpen && (
-        <div 
-          className="md:hidden fixed inset-0 bg-black/50 z-30"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
     </div>
   );
 }

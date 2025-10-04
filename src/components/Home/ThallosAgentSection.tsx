@@ -96,11 +96,11 @@ export default function ThallosAgentSection() {
     <section className="bg-black py-16 sm:py-20 lg:py-24 relative overflow-hidden">
       {/* Enhanced Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute inset-0 bg-gradient-to-b from-black via-purple-950/10 to-black" />
-        <div className="absolute inset-0 bg-gradient-to-r from-purple-950/20 via-transparent to-purple-950/20" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black via-emerald-950/10 to-black" />
+        <div className="absolute inset-0 bg-gradient-to-r from-emerald-950/20 via-transparent to-emerald-950/20" />
         {/* Animated gradient orbs */}
-        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+        <div className="absolute top-1/2 left-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
       </div>
 
       <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -119,18 +119,18 @@ export default function ThallosAgentSection() {
               className="mb-8"
               variants={slideIn}
             >
-              <span className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-purple-950/40 to-purple-900/30 border border-purple-700/40 px-5 py-2.5 backdrop-blur-xl shadow-lg shadow-purple-900/20">
+              <span className="inline-flex items-center gap-3 rounded-full bg-gradient-to-r from-emerald-950/40 to-emerald-900/30 border border-emerald-700/40 px-5 py-2.5 backdrop-blur-xl shadow-lg shadow-emerald-900/20">
                 <span className="relative flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-purple-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-gradient-to-r from-purple-400 to-purple-300"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-gradient-to-r from-emerald-400 to-emerald-300"></span>
                 </span>
-                <span className="text-sm font-semibold text-purple-200 tracking-wider uppercase">AI Powered</span>
+                <span className="text-sm font-semibold text-emerald-200 tracking-wider uppercase">AI Powered</span>
               </span>
             </motion.div>
             
             <h2 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight text-white mb-8 leading-[1.1]">
               <span className="text-white">Thallos </span>
-              <span className="bg-gradient-to-r from-purple-400 via-purple-300 to-purple-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
+              <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-emerald-400 bg-clip-text text-transparent bg-[length:200%_auto] animate-gradient">
                 Agent
               </span>
             </h2>
@@ -155,7 +155,7 @@ export default function ThallosAgentSection() {
               onMouseLeave={() => setIsHovering(false)}
             >
               {/* Animated glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-purple-600 to-purple-400 rounded-3xl opacity-20 group-hover:opacity-40 blur-2xl transition-all duration-500 animate-pulse"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-3xl opacity-20 group-hover:opacity-40 blur-2xl transition-all duration-500 animate-pulse"></div>
               
               {/* Single large textarea with integrated button */}
               <form onSubmit={handleSubmit} className="relative">
@@ -167,25 +167,25 @@ export default function ThallosAgentSection() {
                   onBlur={() => setIsFocused(false)}
                   onKeyPress={handleKeyPress}
                   placeholder={!isFocused && !inputValue ? placeholder : 'Ask me anything about blockchain data...'}
-                  className="relative w-full h-64 lg:h-80 px-6 py-6 pb-16 bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-2xl border border-purple-600/30 rounded-3xl text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-purple-500/50 focus:border-purple-500/50 transition-all duration-300 font-mono text-sm leading-relaxed shadow-2xl shadow-purple-900/20"
+                  className="relative w-full h-64 lg:h-80 px-6 py-6 pb-16 bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-2xl border border-emerald-600/30 rounded-3xl text-white placeholder-gray-500 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 transition-all duration-300 font-mono text-sm leading-relaxed shadow-2xl shadow-emerald-900/20"
                   style={{ 
-                    caretColor: '#a78bfa'
+                    caretColor: '#10b981'
                   }}
                 />
                 
                 {/* Typing indicator */}
                 {!isFocused && !inputValue && isTyping && (
                   <div className="absolute top-6 right-6 flex gap-1">
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                    <div className="w-2 h-2 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-2 h-2 bg-emerald-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                   </div>
                 )}
 
                 {/* Submit button inside textarea */}
                 <button
                   type="submit"
-                  className="absolute bottom-4 right-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold py-2 px-4 rounded-xl hover:from-purple-500 hover:to-purple-400 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-900/30 group"
+                  className="absolute bottom-4 right-4 bg-gradient-to-r from-emerald-600 to-emerald-500 text-white font-semibold py-2 px-4 rounded-xl hover:from-emerald-500 hover:to-emerald-400 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-emerald-900/30 group"
                 >
                   <span className="flex items-center gap-2 text-sm">
                     <span>Send</span>

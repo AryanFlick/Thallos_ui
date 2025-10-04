@@ -39,11 +39,11 @@ export default function WaitlistPage() {
   return (
     <div className="min-h-screen bg-black">
       <Navbar />
-      <div className="flex items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 py-20">
-        <div className="max-w-2xl w-full space-y-8">
+      <div className="flex items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8 pt-24 pb-12 md:pt-20 md:pb-20">
+        <div className="max-w-2xl w-full space-y-6 sm:space-y-8">
           {/* Header */}
-          <div className="text-center space-y-4">
-            <h1 className="text-4xl sm:text-5xl font-bold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
+          <div className="text-center space-y-3 sm:space-y-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold bg-gradient-to-r from-purple-400 to-purple-300 bg-clip-text text-transparent">
               Join the Alpha
             </h1>
             <p className="text-gray-400 text-lg sm:text-xl max-w-xl mx-auto">

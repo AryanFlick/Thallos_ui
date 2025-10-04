@@ -104,7 +104,7 @@ export default function BlogSection() {
     <section id="blog" className="relative py-20 bg-gradient-to-b from-black via-gray-900/50 to-black overflow-hidden">
       {/* Background Elements */}
       <div className="absolute inset-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/10 rounded-full blur-3xl"></div>
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-600/10 rounded-full blur-3xl"></div>
       </div>
 
@@ -117,16 +117,16 @@ export default function BlogSection() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 bg-purple-600/10 border border-purple-600/20 rounded-full px-4 py-2 mb-6">
-            <svg className="w-4 h-4 text-purple-400" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+          <div className="inline-flex items-center gap-2 bg-emerald-600/10 border border-emerald-600/20 rounded-full px-4 py-2 mb-6">
+            <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" />
             </svg>
-            <span className="text-purple-400 text-sm font-medium">Insights & Analysis</span>
+            <span className="text-emerald-400 text-sm font-medium">Insights & Analysis</span>
           </div>
           
           <h2 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-6">
             Latest from{' '}
-            <span className="bg-gradient-to-r from-purple-400 via-purple-300 to-blue-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-emerald-400 via-emerald-300 to-blue-400 bg-clip-text text-transparent">
               Thallos
             </span>
           </h2>
@@ -143,10 +143,10 @@ export default function BlogSection() {
           <button
             onClick={goToPrevious}
             disabled={currentIndex === 0}
-            className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 border border-purple-600/40 text-white p-3 rounded-full transition-all duration-300 ${
+            className={`absolute left-4 top-1/2 -translate-y-1/2 z-10 border border-emerald-600/40 text-white p-3 rounded-full transition-all duration-300 ${
               currentIndex === 0 
                 ? 'bg-gray-600/20 opacity-50 cursor-not-allowed' 
-                : 'bg-purple-600/20 hover:bg-purple-600/40 hover:scale-110'
+                : 'bg-emerald-600/20 hover:bg-emerald-600/40 hover:scale-110'
             }`}
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
@@ -157,10 +157,10 @@ export default function BlogSection() {
           <button
             onClick={goToNext}
             disabled={currentIndex >= maxIndex}
-            className={`absolute right-4 top-1/2 -translate-y-1/2 z-10 border border-purple-600/40 text-white p-3 rounded-full transition-all duration-300 ${
+            className={`absolute right-4 top-1/2 -translate-y-1/2 z-10 border border-emerald-600/40 text-white p-3 rounded-full transition-all duration-300 ${
               currentIndex >= maxIndex
                 ? 'bg-gray-600/20 opacity-50 cursor-not-allowed'
-                : 'bg-purple-600/20 hover:bg-purple-600/40 hover:scale-110'
+                : 'bg-emerald-600/20 hover:bg-emerald-600/40 hover:scale-110'
             }`}
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
@@ -181,7 +181,7 @@ export default function BlogSection() {
                     whileInView={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
                     viewport={{ once: true }}
-                    className="group bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-xl border border-gray-700/50 rounded-2xl overflow-hidden hover:border-purple-600/50 transition-all duration-500 hover:scale-[1.02] h-full"
+                    className="group bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-xl border border-gray-700/50 rounded-2xl overflow-hidden hover:border-emerald-600/50 transition-all duration-500 hover:scale-[1.02] h-full"
                   >
                     <Link href={`/blog/${post.id}`} className="block h-full">
                       <div className="flex flex-col h-full">
@@ -196,7 +196,7 @@ export default function BlogSection() {
                           
                           {/* Category Badge */}
                           <div className="absolute top-4 left-4">
-                            <span className="bg-purple-600/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
+                            <span className="bg-emerald-600/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1 rounded-full">
                               {post.category}
                             </span>
                           </div>
@@ -212,7 +212,7 @@ export default function BlogSection() {
                           </div>
 
                           {/* Title */}
-                          <h3 className="text-lg font-bold text-white mb-3 group-hover:text-purple-300 transition-colors duration-300 line-clamp-2">
+                          <h3 className="text-lg font-bold text-white mb-3 group-hover:text-emerald-300 transition-colors duration-300 line-clamp-2">
                             {post.title}
                           </h3>
 
@@ -222,7 +222,7 @@ export default function BlogSection() {
                           </p>
 
                           {/* Read More */}
-                          <div className="flex items-center text-purple-400 text-sm font-semibold group-hover:text-purple-300 transition-colors duration-300 mt-auto">
+                          <div className="flex items-center text-emerald-400 text-sm font-semibold group-hover:text-emerald-300 transition-colors duration-300 mt-auto">
                             <span>Read More</span>
                             <svg className="w-4 h-4 ml-2 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
@@ -245,8 +245,8 @@ export default function BlogSection() {
                 onClick={() => goToSlide(i)}
                 className={`w-3 h-3 rounded-full transition-all duration-300 ${
                   i === currentIndex
-                    ? 'bg-purple-500 w-8'
-                    : 'bg-purple-500/30 hover:bg-purple-500/60'
+                    ? 'bg-emerald-500 w-8'
+                    : 'bg-emerald-500/30 hover:bg-emerald-500/60'
                 }`}
               />
             ))}
@@ -263,7 +263,7 @@ export default function BlogSection() {
         >
           <Link
             href="/blog"
-            className="inline-flex items-center gap-3 bg-gradient-to-r from-purple-600/20 to-purple-500/20 border border-purple-600/40 text-purple-300 hover:text-white hover:border-purple-500/60 px-8 py-4 rounded-2xl transition-all duration-300 hover:scale-105 group"
+            className="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-600/20 to-emerald-500/20 border border-emerald-600/40 text-emerald-300 hover:text-white hover:border-emerald-500/60 px-8 py-4 rounded-2xl transition-all duration-300 hover:scale-105 group"
           >
             <span className="font-semibold">View All Articles</span>
             <svg className="w-5 h-5 transition-transform duration-300 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">

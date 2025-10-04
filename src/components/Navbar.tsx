@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { supabase } from '@/lib/supabase';
 import { User } from '@supabase/supabase-js';
-import UserProfileDropdown from './UserProfileDropdown';
 
 export default function Navbar() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -62,16 +61,16 @@ export default function Navbar() {
     window.location.href = '/';
   };
 
+  const getUserDisplayName = () => {
+    if (!user) return 'User';
+    return user.user_metadata?.name || user.email?.split('@')[0] || 'User';
+  };
+
   // Different nav items based on authentication status
   const navItems = user ? [
     { name: 'Agent', href: '/chat' },
-    { name: 'Wallet', href: '/wallet' },
-  ] : [
-    { name: 'Product', href: '#product' },
-    { name: 'Why Thallos', href: '#why-thallos' },
-    { name: 'Demo', href: '#demo' },
-    { name: 'Contact', href: '#contact' },
-  ];
+    { name: 'Profile', href: '/profile' },
+  ] : [];
 
   return (
     <nav
@@ -126,25 +125,52 @@ export default function Navbar() {
               ))}
             </div>
 
-            {/* Right Side - User Profile or Request Access */}
-            <div className={`hidden md:flex items-center flex-shrink-0 ${isScrolled ? 'ml-8' : ''}`}>
+            {/* Right Side - Auth Buttons */}
+            <div className={`hidden md:flex items-center gap-3 flex-shrink-0 ${isScrolled ? 'ml-8' : ''}`}>
               {user ? (
-                // Logged in - show user profile dropdown
-                <UserProfileDropdown user={user} onSignOut={handleSignOut} />
+                // Logged in - show user name and logout button
+                <>
+                  <Link
+                    href="/profile"
+                    className={`text-white/90 hover:text-green-400 font-medium transition-all duration-300 ${
+                      isScrolled ? 'text-sm' : 'text-base'
+                    }`}
+                  >
+                    {getUserDisplayName()}
+                  </Link>
+                  <button
+                    onClick={handleSignOut}
+                    className={`text-red-400 hover:text-red-300 font-medium transition-all duration-300 ${
+                      isScrolled ? 'text-sm' : 'text-base'
+                    }`}
+                  >
+                    Logout
+                  </button>
+                </>
               ) : (
-                // Not logged in - show Request Access button
-              <Link
-                href="/waitlist"
-                  className={`bg-gradient-to-r from-green-800/80 to-green-700/80 backdrop-blur-xl border border-green-600/20 text-white hover:from-green-700/90 hover:to-green-600/90 transition-all duration-300 font-semibold rounded-full shadow-lg shadow-green-950/30 hover:shadow-green-950/50 hover:scale-105 relative group overflow-hidden ${
-                  isScrolled
-                    ? 'px-4 py-1.5 text-sm'
-                    : 'px-5 py-2 text-base'
-                }`}
-              >
-                  <span className="relative z-10">Request Access</span>
-                <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                  <div className="absolute -inset-1 bg-gradient-to-r from-green-700 to-green-500 rounded-full opacity-20 group-hover:opacity-40 blur transition-all duration-300 -z-10"></div>
-              </Link>
+                // Not logged in - show Login and Sign Up buttons
+                <>
+                  <Link
+                    href="/login"
+                    className={`text-white/90 hover:text-white font-medium transition-all duration-300 ${
+                      isScrolled ? 'text-sm' : 'text-base'
+                    }`}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    href="/login"
+                    className={`bg-gradient-to-r from-green-800/80 to-green-700/80 backdrop-blur-xl border border-green-600/20 text-white hover:from-green-700/90 hover:to-green-600/90 transition-all duration-300 font-semibold rounded-full shadow-lg shadow-green-950/30 hover:shadow-green-950/50 hover:scale-105 relative group overflow-hidden ${
+                      isScrolled
+                        ? 'px-4 py-1.5 text-sm'
+                        : 'px-5 py-2 text-base'
+                    }`}
+                  >
+                    <span className="relative z-10">Sign Up</span>
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/10 to-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className="absolute -inset-1 bg-gradient-to-r from-green-700 to-green-500 rounded-full opacity-20 group-hover:opacity-40 blur transition-all duration-300 -z-10"></div>
+                  </Link>
+                </>
               )}
             </div>
 
@@ -198,15 +224,13 @@ export default function Navbar() {
                 {/* Mobile Auth Buttons */}
                 {user ? (
                   <div className="border-t border-white/20 pt-4 space-y-2">
-                    <div className="px-4 py-3 bg-white/5 rounded-lg">
-                      <p className="text-white font-medium text-sm">{user.email}</p>
-                    </div>
                     <Link
-                      href="/wallet"
+                      href="/profile"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="block w-full text-center text-white/80 hover:text-white transition-colors font-medium py-2"
+                      className="block px-4 py-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
                     >
-                      Wallet Settings
+                      <p className="text-white font-medium text-sm">{user.email}</p>
+                      <p className="text-gray-400 text-xs">View Profile</p>
                     </Link>
                     <button
                       onClick={() => {
@@ -219,14 +243,23 @@ export default function Navbar() {
                     </button>
                   </div>
                 ) : (
-                  // Not logged in - show Request Access button
-                <Link
-                  href="/waitlist"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                    className="block w-full text-center bg-gradient-to-r from-green-800/80 to-green-700/80 backdrop-blur-xl border border-green-600/20 text-white hover:from-green-700/90 hover:to-green-600/90 transition-all duration-300 font-semibold rounded-full py-3 px-6 mt-4 shadow-lg shadow-green-950/30 hover:shadow-green-950/50"
-                >
-                    Request Access
-                </Link>
+                  // Not logged in - show Login and Sign Up buttons
+                  <div className="border-t border-white/20 pt-4 space-y-3">
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block w-full text-center text-white/80 hover:text-white transition-colors font-medium py-2"
+                    >
+                      Login
+                    </Link>
+                    <Link
+                      href="/login"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="block w-full text-center bg-gradient-to-r from-green-800/80 to-green-700/80 backdrop-blur-xl border border-green-600/20 text-white hover:from-green-700/90 hover:to-green-600/90 transition-all duration-300 font-semibold rounded-full py-3 px-6 shadow-lg shadow-green-950/30 hover:shadow-green-950/50"
+                    >
+                      Sign Up
+                    </Link>
+                  </div>
                 )}
               </div>
             </div>

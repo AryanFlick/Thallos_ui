@@ -48,6 +48,9 @@ export default function FAQSection() {
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <div className="text-center mb-16">
+          <div className="inline-flex items-center gap-2 bg-emerald-950/30 border border-emerald-800/30 rounded-full px-4 py-2 mb-6">
+            <span className="text-emerald-400 text-sm font-medium">{'// Support'}</span>
+          </div>
           <ShinyText 
             text="Frequently Asked Questions"
             speed={4}
@@ -63,17 +66,17 @@ export default function FAQSection() {
           {faqData.map((faq) => (
             <div
               key={faq.id}
-              className="bg-gradient-to-br from-gray-900/50 via-gray-800/30 to-gray-900/50 backdrop-blur-sm border border-purple-800/20 rounded-2xl overflow-hidden"
+              className="bg-gradient-to-br from-gray-900/50 via-gray-800/30 to-gray-900/50 backdrop-blur-sm border border-emerald-800/20 rounded-2xl overflow-hidden"
             >
               {/* Question Button */}
               <button
                 onClick={() => toggleItem(faq.id)}
-                className="w-full px-6 sm:px-8 py-6 text-left flex items-center justify-between hover:bg-purple-900/10 transition-all duration-300 group"
+                className="w-full px-6 sm:px-8 py-6 text-left flex items-center justify-between hover:bg-emerald-900/10 transition-all duration-300 group"
               >
                 <ShinyText
                   text={faq.question}
                   speed={6}
-                  className="text-lg sm:text-xl font-semibold pr-4 group-hover:text-purple-300 transition-colors duration-300"
+                  className="text-lg sm:text-xl font-semibold pr-4 group-hover:text-emerald-300 transition-colors duration-300"
                 />
                 <motion.div
                   animate={{ rotate: openItems.includes(faq.id) ? 180 : 0 }}
@@ -81,7 +84,7 @@ export default function FAQSection() {
                   className="flex-shrink-0"
                 >
                   <svg 
-                    className="w-6 h-6 text-purple-400 group-hover:text-purple-300 transition-colors duration-300" 
+                    className="w-6 h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors duration-300" 
                     fill="none" 
                     viewBox="0 0 24 24" 
                     strokeWidth="2" 
@@ -102,7 +105,7 @@ export default function FAQSection() {
                     transition={{ duration: 0.3, ease: "easeOut" }}
                     className="overflow-hidden"
                   >
-                    <div className="px-6 sm:px-8 pb-6 pt-2 border-t border-purple-800/10">
+                    <div className="px-6 sm:px-8 pb-6 pt-2 border-t border-emerald-800/10">
                       <ShinyText
                         text={faq.answer}
                         speed={8}
@@ -118,7 +121,7 @@ export default function FAQSection() {
 
         {/* Contact CTA */}
         <div className="text-center mt-16">
-          <div className="inline-flex flex-col items-center space-y-4 p-8 bg-gradient-to-br from-purple-900/20 via-purple-800/10 to-purple-900/20 backdrop-blur-sm border border-purple-600/20 rounded-2xl">
+          <div className="inline-flex flex-col items-center space-y-4 p-8 bg-gradient-to-br from-emerald-900/20 via-emerald-800/10 to-emerald-900/20 backdrop-blur-sm border border-emerald-600/20 rounded-2xl">
             <ShinyText
               text="Still have questions?"
               speed={5}
@@ -129,7 +132,7 @@ export default function FAQSection() {
             </p>
             <a
               href="/waitlist"
-              className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-purple-600/80 to-purple-500/80 backdrop-blur-xl border border-purple-400/20 text-white font-semibold rounded-xl hover:from-purple-500/90 hover:to-purple-400/90 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-900/30"
+              className="inline-flex items-center px-8 py-3 bg-gradient-to-r from-emerald-600/80 to-emerald-500/80 backdrop-blur-xl border border-emerald-400/20 text-white font-semibold rounded-xl hover:from-emerald-500/90 hover:to-emerald-400/90 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-emerald-900/30"
             >
               <span>Get in Touch</span>
               <svg className="w-5 h-5 ml-2" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
@@ -141,8 +144,8 @@ export default function FAQSection() {
       </div>
 
       {/* Background Elements */}
-      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-purple-600/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/5 rounded-full blur-3xl"></div>
+      <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-emerald-600/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-emerald-400/5 rounded-full blur-3xl"></div>
     </section>
   );
 }
