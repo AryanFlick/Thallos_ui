@@ -2,17 +2,17 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useRouter } from 'next/navigation';
+import { queryBackend, type QueryResponse } from '@/lib/api';
 
 const queryExamples = [
-  { type: "Bitcoin Address", query: "Show me data about this bitcoin address: 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa" },
-  { type: "Ethereum Wallet", query: "Analyze this Ethereum wallet: 0x742d35Cc6634C0532925a3b844Bc9e7595f0bEb" },
-  { type: "Transaction", query: "Track transaction: 0x5c504ed432cb51138bcf09aa5e8a410dd4a1e204" },
-  { type: "Smart Contract", query: "Audit smart contract at: 0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984" },
-  { type: "Market Data", query: "What's the current price and volume of BTC/USD?" },
-  { type: "DeFi Protocol", query: "Show TVL and APY for Aave v3 on Ethereum" },
-  { type: "NFT Collection", query: "Get floor price and volume for Bored Ape Yacht Club" },
-  { type: "Gas Fees", query: "What are the current gas fees on Ethereum mainnet?" }
+  { type: "Liquidity Pools", query: "What are the best liquidity pools right now?" },
+  { type: "Lending Rates", query: "What's the lending APY for ETH on Aave?" },
+  { type: "Pool Comparison", query: "Show me WETH-USDC pool rates across protocols" },
+  { type: "Token Price", query: "What's the current price of BTC?" },
+  { type: "DeFi Protocol", query: "Show TVL and APY for Aave v3" },
+  { type: "Best Yield", query: "Where can I get the best yield for USDC?" },
+  { type: "Protocol Comparison", query: "Compare lending rates between Aave and Compound" },
+  { type: "Market Data", query: "What are the top pools by TVL on Aerodrome?" }
 ];
 
 const fadeInUp = {
@@ -38,9 +38,13 @@ export default function ThallosAgentSection() {
   const [currentExampleIndex, setCurrentExampleIndex] = useState(0);
   const [isFocused, setIsFocused] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
+  
+  // API state
+  const [isLoading, setIsLoading] = useState(false);
+  const [response, setResponse] = useState<QueryResponse | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const router = useRouter();
 
   useEffect(() => {
     if (isFocused || isHovering) return;
@@ -80,15 +84,29 @@ export default function ThallosAgentSection() {
     return () => clearInterval(interval);
   }, [currentExampleIndex, isFocused, isHovering]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    router.push('/waitlist');
+    
+    if (!inputValue.trim()) return;
+    
+    setIsLoading(true);
+    setError(null);
+    setResponse(null);
+    
+    try {
+      const result = await queryBackend(inputValue);
+      setResponse(result);
+    } catch (err: any) {
+      setError(err.message || 'Failed to query backend. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      router.push('/waitlist');
+      handleSubmit(e as any);
     }
   };
 
@@ -185,13 +203,26 @@ export default function ThallosAgentSection() {
                 {/* Submit button inside textarea */}
                 <button
                   type="submit"
-                  className="absolute bottom-4 right-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold py-2 px-4 rounded-xl hover:from-purple-500 hover:to-purple-400 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-900/30 group"
+                  disabled={isLoading || !inputValue.trim()}
+                  className="absolute bottom-4 right-4 bg-gradient-to-r from-purple-600 to-purple-500 text-white font-semibold py-2 px-4 rounded-xl hover:from-purple-500 hover:to-purple-400 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-purple-900/30 group disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                 >
                   <span className="flex items-center gap-2 text-sm">
-                    <span>Send</span>
-                    <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
-                    </svg>
+                    {isLoading ? (
+                      <>
+                        <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Sending...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>Send</span>
+                        <svg className="w-4 h-4 group-hover:translate-x-0.5 transition-transform duration-300" fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 12L3.269 3.126A59.768 59.768 0 0121.485 12 59.77 59.77 0 013.27 20.876L5.999 12zm0 0h7.5" />
+                        </svg>
+                      </>
+                    )}
                   </span>
                 </button>
 
@@ -205,6 +236,81 @@ export default function ThallosAgentSection() {
             </div>
           </motion.div>
         </div>
+
+        {/* Response Section */}
+        {(isLoading || response || error) && (
+          <motion.div
+            className="mt-12 max-w-4xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4 }}
+          >
+            <div className="bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 backdrop-blur-2xl border border-purple-600/30 rounded-3xl p-8 shadow-2xl shadow-purple-900/20">
+              {isLoading && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="flex gap-2">
+                    <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                    <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                    <div className="w-3 h-3 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  </div>
+                  <span className="ml-4 text-purple-300 font-medium">Querying backend...</span>
+                </div>
+              )}
+
+              {error && (
+                <div className="bg-red-900/20 border border-red-500/30 rounded-2xl p-6">
+                  <div className="flex items-start gap-3">
+                    <svg className="w-6 h-6 text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z" />
+                    </svg>
+                    <div>
+                      <h3 className="text-red-300 font-semibold mb-1">Error</h3>
+                      <p className="text-red-200/80 text-sm">{error}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {response && (
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-purple-300 font-semibold mb-3 flex items-center gap-2">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      Answer
+                    </h3>
+                    <div className="prose prose-invert max-w-none">
+                      <p className="text-gray-200 leading-relaxed whitespace-pre-wrap">{response.answer}</p>
+                    </div>
+                  </div>
+
+                  {response.sql && (
+                    <div>
+                      <h4 className="text-purple-300/70 font-medium text-sm mb-2 flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" />
+                        </svg>
+                        Generated SQL
+                      </h4>
+                      <pre className="bg-black/40 rounded-xl p-4 overflow-x-auto text-xs">
+                        <code className="text-purple-200/80 font-mono">{response.sql}</code>
+                      </pre>
+                    </div>
+                  )}
+
+                  {response.debug && (
+                    <div className="text-xs text-gray-500 flex gap-4">
+                      {response.intent && <span>Intent: {response.intent}</span>}
+                      {response.retryCount !== undefined && <span>Retries: {response.retryCount}</span>}
+                      {response.debug.total_rows !== undefined && <span>Rows: {response.debug.total_rows}</span>}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
       </div>
     </section>
   );
