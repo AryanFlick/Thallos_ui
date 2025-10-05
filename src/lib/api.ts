@@ -1,7 +1,6 @@
 // Frontend API service for calling the backend
-// Since backend is deployed as Vercel serverless functions in the same project,
-// we use relative paths (empty string means same origin)
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || '';
+// Backend is deployed separately at thallos-llm-service.vercel.app
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'https://thallos-llm-service.vercel.app';
 
 export interface QueryResponse {
   answer: string;
