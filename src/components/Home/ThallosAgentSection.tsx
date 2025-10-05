@@ -96,8 +96,9 @@ export default function ThallosAgentSection() {
     try {
       const result = await queryBackend(inputValue);
       setResponse(result);
-    } catch (err: any) {
-      setError(err.message || 'Failed to query backend. Please try again.');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to query backend. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -106,7 +107,7 @@ export default function ThallosAgentSection() {
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit(e as any);
+      handleSubmit(e as unknown as React.FormEvent);
     }
   };
 

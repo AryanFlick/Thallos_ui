@@ -4,18 +4,22 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhos
 export interface QueryResponse {
   answer: string;
   sql?: string;
-  rows?: any[];
+  rows?: Record<string, unknown>[];
   source?: string;
   intent?: string;
   retryCount?: number;
-  debug?: any;
+  debug?: {
+    sql?: string;
+    raw_data_sample?: Record<string, unknown>[];
+    total_rows?: number;
+  };
   error?: string;
 }
 
 export interface StreamChunk {
   type: 'sql' | 'rows' | 'answer_start' | 'answer_chunk' | 'done' | 'error';
   sql?: string;
-  rows?: any[];
+  rows?: Record<string, unknown>[];
   totalRows?: number;
   content?: string;
   retryCount?: number;
