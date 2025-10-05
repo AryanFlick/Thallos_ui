@@ -50,24 +50,14 @@ async function readJson(req) {
 }
 
 export default async function handler(req, res) {
-  // Set CORS headers to allow frontend access
-  const allowedOrigins = [
-    'http://localhost:3000',
-    'http://localhost:3001', 
-    'https://thallos-ui.vercel.app',
-    'https://thallos-irvd420jw-aryan-flicknfindcs-projects.vercel.app',
-    process.env.FRONTEND_URL
-  ].filter(Boolean);
-  
+  // Set CORS headers FIRST for ALL requests including OPTIONS
   const origin = req.headers.origin;
-  // Allow all origins temporarily for testing
   res.setHeader('Access-Control-Allow-Origin', origin || '*');
-  
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   
-  // Handle preflight OPTIONS request
+  // Handle preflight OPTIONS request EARLY
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
