@@ -17,8 +17,18 @@ export interface QueryResponse {
   error?: string;
 }
 
+export interface ChartConfig {
+  type: 'line' | 'bar' | 'pie' | 'area';
+  title?: string;
+  description?: string;
+  data: Array<Record<string, string | number>>;
+  xKey?: string;
+  yKey?: string | string[];
+  colors?: string[];
+}
+
 export interface StreamChunk {
-  type: 'sql' | 'rows' | 'answer_start' | 'answer_chunk' | 'done' | 'error';
+  type: 'sql' | 'rows' | 'answer_start' | 'answer_chunk' | 'done' | 'error' | 'chart';
   sql?: string;
   rows?: Record<string, unknown>[];
   totalRows?: number;
@@ -26,6 +36,7 @@ export interface StreamChunk {
   retryCount?: number;
   intent?: string;
   error?: string;
+  chart?: ChartConfig;
 }
 
 /**

@@ -4,6 +4,7 @@ import pg from "pg";
 import { planQuery, retryPlan, generateAnswerFromResults, isQuestionInDataScope, handleGeneralKnowledgeQuestion, detectQueryIntent } from "../lib/instructions.js";
 import { verifyAuthToken } from "../lib/auth.js";
 import { logQuery, ensureUserExists } from "../lib/query-logger.js";
+import { shouldGenerateChart } from "../lib/chart-generator.js";
 
 export const config = { runtime: "nodejs" }; // optionally: { runtime: "nodejs", regions: ["iad1"] }
 
@@ -252,6 +253,13 @@ Try asking:
       // Send initial data (SQL and rows)
       res.write(`data: ${JSON.stringify({ type: 'sql', sql })}\n\n`);
       res.write(`data: ${JSON.stringify({ type: 'rows', rows: rows.slice(0, 10), totalRows: rows.length })}\n\n`);
+      
+      // Check if we should generate a chart
+      const chartConfig = shouldGenerateChart(question, rows, intent);
+      if (chartConfig) {
+        res.write(`data: ${JSON.stringify({ type: 'chart', chart: chartConfig })}\n\n`);
+      }
+      
       res.write(`data: ${JSON.stringify({ type: 'answer_start' })}\n\n`);
 
       try {

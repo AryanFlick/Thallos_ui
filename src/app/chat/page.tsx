@@ -7,7 +7,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import WalletPromptModal from "@/components/WalletPromptModal";
 import WalletPortfolio from "@/components/WalletPortfolio";
-import { queryBackendStream, StreamChunk } from "@/lib/api";
+import { queryBackendStream, StreamChunk, ChartConfig } from "@/lib/api";
+import ChartRenderer from "@/components/ChartRenderer";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -23,6 +24,7 @@ interface Message {
   rows?: Record<string, unknown>[];
   intent?: string;
   source?: string;
+  chart?: ChartConfig;
 }
 
 interface Conversation {
@@ -373,6 +375,13 @@ export default function ChatPage() {
               ? { ...msg, rows: chunk.rows }
               : msg
           ));
+        } else if (chunk.type === 'chart' && chunk.chart) {
+          // Update message with chart config
+          setMessages(prev => prev.map(msg => 
+            msg.id === aiMessageId 
+              ? { ...msg, chart: chunk.chart }
+              : msg
+          ));
         } else if (chunk.type === 'answer_chunk' && chunk.content) {
           answerText += chunk.content;
           // Update message text with streaming content
@@ -606,6 +615,12 @@ export default function ChatPage() {
                                         .replace(/\n/g, '<br/>')
                                     }}
                                   />
+                                  {/* Render Chart if present */}
+                                  {message.chart && (
+                                    <div className="mt-4">
+                                      <ChartRenderer config={message.chart} />
+                                    </div>
+                                  )}
                                   {/* Debug Button */}
                                   {(message.sql || message.rows || message.intent) && (
                                     <div className="mt-3 pt-3 border-t border-gray-700/50">
