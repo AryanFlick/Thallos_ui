@@ -66,6 +66,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Map chainId to chain name for database
+    const chainMap: { [key: number]: string } = {
+      1: 'ethereum',
+      137: 'polygon',
+      42161: 'arbitrum',
+      10: 'optimism',
+      8453: 'base',
+      56: 'bsc'
+    };
+    
+    const chainName = chainMap[chainId] || 'ethereum';
+
     // Insert wallet into database
     const { data, error } = await supabase
       .from('user_wallets')
@@ -73,7 +85,7 @@ export async function POST(request: NextRequest) {
         {
           user_id: user.id,
           address: address.toLowerCase(), // Store addresses in lowercase for consistency
-          chain_id: chainId,
+          chain: chainName, // Use 'chain' not 'chain_id'
         },
       ])
       .select()

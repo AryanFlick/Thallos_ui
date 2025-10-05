@@ -12,18 +12,18 @@ const supabase = createClient(
 interface UserWallet {
   id: string;
   address: string;
-  chain_id: number;
+  chain: string;
   created_at: string;
 }
 
 // Chain information
-const CHAIN_INFO: Record<number, { name: string; explorer: string; color: string }> = {
-  1: { name: "Ethereum", explorer: "https://etherscan.io", color: "bg-blue-500" },
-  137: { name: "Polygon", explorer: "https://polygonscan.com", color: "bg-purple-500" },
-  10: { name: "Optimism", explorer: "https://optimistic.etherscan.io", color: "bg-red-500" },
-  42161: { name: "Arbitrum", explorer: "https://arbiscan.io", color: "bg-blue-600" },
-  8453: { name: "Base", explorer: "https://basescan.org", color: "bg-indigo-500" },
-  11155111: { name: "Sepolia", explorer: "https://sepolia.etherscan.io", color: "bg-gray-500" },
+const CHAIN_INFO: Record<string, { name: string; explorer: string; color: string }> = {
+  ethereum: { name: "Ethereum", explorer: "https://etherscan.io", color: "bg-blue-500" },
+  polygon: { name: "Polygon", explorer: "https://polygonscan.com", color: "bg-purple-500" },
+  optimism: { name: "Optimism", explorer: "https://optimistic.etherscan.io", color: "bg-red-500" },
+  arbitrum: { name: "Arbitrum", explorer: "https://arbiscan.io", color: "bg-blue-600" },
+  base: { name: "Base", explorer: "https://basescan.org", color: "bg-indigo-500" },
+  bsc: { name: "BSC", explorer: "https://bscscan.com", color: "bg-yellow-500" },
 };
 
 export default function UserWallets() {
@@ -116,9 +116,9 @@ export default function UserWallets() {
     navigator.clipboard.writeText(text);
   };
 
-  const getChainInfo = (chainId: number) => {
-    return CHAIN_INFO[chainId] || { 
-      name: `Chain ${chainId}`, 
+  const getChainInfo = (chain: string) => {
+    return CHAIN_INFO[chain] || { 
+      name: chain.charAt(0).toUpperCase() + chain.slice(1), 
       explorer: "", 
       color: "bg-gray-500" 
     };
@@ -153,7 +153,7 @@ export default function UserWallets() {
       ) : (
         <div className="space-y-3">
           {wallets.map((wallet) => {
-            const chainInfo = getChainInfo(wallet.chain_id);
+            const chainInfo = getChainInfo(wallet.chain);
             return (
               <div
                 key={wallet.id}
