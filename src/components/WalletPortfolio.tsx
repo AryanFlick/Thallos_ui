@@ -16,7 +16,9 @@ interface WalletPortfolioProps {
 export default function WalletPortfolio({ user }: WalletPortfolioProps) {
   const [hasWallet, setHasWallet] = useState(false);
   const [walletCount, setWalletCount] = useState(0);
+  const [portfolioValue, setPortfolioValue] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingValue, setIsLoadingValue] = useState(false);
 
   useEffect(() => {
     const checkWallets = async () => {
@@ -35,6 +37,36 @@ export default function WalletPortfolio({ user }: WalletPortfolioProps) {
         if (response.ok && result.wallets) {
           setWalletCount(result.wallets.length);
           setHasWallet(result.wallets.length > 0);
+          
+          // Fetch real portfolio value from blockchain
+          if (result.wallets.length > 0) {
+            setIsLoadingValue(true);
+            try {
+              const portfolioResponse = await fetch("/api/portfolio", {
+                headers: {
+                  Authorization: `Bearer ${session.access_token}`,
+                },
+              });
+
+              if (portfolioResponse.ok) {
+                const portfolioData = await portfolioResponse.json();
+                const value = parseFloat(portfolioData.totalValue);
+                // Always set value, even if 0
+                setPortfolioValue(value);
+                console.log('Portfolio value fetched:', value);
+              } else {
+                console.error('Portfolio API returned error:', await portfolioResponse.text());
+                // Set to 0 on error so we still show the UI
+                setPortfolioValue(0);
+              }
+            } catch (portfolioError) {
+              console.error("Error fetching portfolio value:", portfolioError);
+              // Set to 0 on error so we still show the UI
+              setPortfolioValue(0);
+            } finally {
+              setIsLoadingValue(false);
+            }
+          }
         }
       } catch (error) {
         console.error("Error checking wallets:", error);
@@ -66,16 +98,45 @@ export default function WalletPortfolio({ user }: WalletPortfolioProps) {
             <span className="text-xs text-emerald-400 font-medium">{walletCount} {walletCount === 1 ? 'Wallet' : 'Wallets'}</span>
           </div>
           
-          <div className="bg-gradient-to-br from-emerald-900/20 to-emerald-800/10 border border-emerald-500/20 rounded-lg p-3">
-            <div className="flex items-center gap-2 mb-2">
-              <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
-              </svg>
-              <p className="text-xs text-gray-400 font-medium">Connected Wallets</p>
-            </div>
-            <p className="text-sm text-emerald-300">
-              Agent can now provide personalized insights based on your portfolio
-            </p>
+          <div className="bg-gradient-to-br from-emerald-900/20 to-emerald-800/10 border border-emerald-500/20 rounded-lg p-4">
+            {isLoadingValue ? (
+              <div className="animate-pulse">
+                <p className="text-xs text-gray-400 mb-1">Total Value</p>
+                <div className="h-8 bg-emerald-900/30 rounded w-32 mb-2"></div>
+                <div className="h-3 bg-emerald-900/20 rounded w-24"></div>
+              </div>
+            ) : portfolioValue !== null ? (
+              <>
+                <div className="mb-3">
+                  <p className="text-xs text-gray-400 mb-1">Total Value</p>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-2xl font-bold text-emerald-400">
+                      ${portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                    </span>
+                  </div>
+                  {portfolioValue > 0 && (
+                    <p className="text-xs text-gray-500 mt-1">Based on current market prices</p>
+                  )}
+                </div>
+                <div className="pt-3 border-t border-emerald-500/10">
+                  <p className="text-xs text-gray-500">
+                    Agent has access to your portfolio for personalized DeFi insights
+                  </p>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex items-center gap-2 mb-2">
+                  <svg className="w-4 h-4 text-emerald-400" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a2.25 2.25 0 00-2.25-2.25H15a3 3 0 11-6 0H5.25A2.25 2.25 0 003 12m18 0v6a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 18v-6m18 0V9M3 12V9m18 0a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 9m18 0V6a2.25 2.25 0 00-2.25-2.25H5.25A2.25 2.25 0 003 6v3" />
+                  </svg>
+                  <p className="text-xs text-gray-400 font-medium">Loading portfolio...</p>
+                </div>
+                <p className="text-sm text-emerald-300">
+                  Fetching wallet balance from blockchain
+                </p>
+              </>
+            )}
           </div>
         </div>
       ) : (
