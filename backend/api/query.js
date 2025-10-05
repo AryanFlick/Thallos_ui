@@ -55,6 +55,7 @@ export default async function handler(req, res) {
     'http://localhost:3000',
     'http://localhost:3001', 
     'https://thallos-ui.vercel.app',
+    'https://thallos-irvd420jw-aryan-flicknfindcs-projects.vercel.app',
     process.env.FRONTEND_URL
   ].filter(Boolean);
   
