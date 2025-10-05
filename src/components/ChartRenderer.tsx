@@ -37,12 +37,12 @@ const ChartRenderer: React.FC<ChartRendererProps> = ({ config }) => {
   const colors = config.colors || EMERALD_COLORS;
 
   // Custom tooltip with emerald theme
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: Array<{ name: string; value: number | string; color: string }>; label?: string }) => {
     if (active && payload && payload.length) {
       return (
         <div className="bg-gray-900/95 border border-emerald-500/30 rounded-lg p-3 shadow-xl">
           <p className="text-emerald-300 font-semibold mb-1">{label}</p>
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index: number) => (
             <p key={index} className="text-white text-sm">
               <span style={{ color: entry.color }}>{entry.name}: </span>
               <span className="font-bold">
@@ -149,10 +149,10 @@ const ChartRenderer: React.FC<ChartRendererProps> = ({ config }) => {
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }: any) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={(props: { name?: string; percent?: number }) => `${props.name || ''} ${props.percent ? (props.percent * 100).toFixed(0) : '0'}%`}
                 outerRadius={120}
                 fill="#8884d8"
-                dataKey={config.yKey || 'value'}
+                dataKey={(Array.isArray(config.yKey) ? config.yKey[0] : config.yKey) || 'value'}
               >
                 {config.data.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={colors[index % colors.length]} />

@@ -4,10 +4,9 @@ import { useState, useEffect } from "react";
 import { createClient, User } from "@supabase/supabase-js";
 import { AnimatePresence, motion } from "framer-motion";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import WalletPromptModal from "@/components/WalletPromptModal";
 import WalletPortfolio from "@/components/WalletPortfolio";
-import { queryBackendStream, StreamChunk, ChartConfig } from "@/lib/api";
+import { queryBackendStream, ChartConfig } from "@/lib/api";
 import ChartRenderer from "@/components/ChartRenderer";
 
 const supabase = createClient(
@@ -49,7 +48,6 @@ export default function ChatPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWalletPrompt, setShowWalletPrompt] = useState(false);
   const [expandedDebug, setExpandedDebug] = useState<Set<string>>(new Set());
-  const router = useRouter();
 
   const toggleDebug = (messageId: string) => {
     setExpandedDebug(prev => {
