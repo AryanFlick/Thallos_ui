@@ -1,0 +1,27 @@
+{
+  "name": "thallos-llm-service",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.58.0",
+    "dotenv": "^16.6.1",
+    "openai": "^4.58.1",
+    "pg": "^8.11.5",
+    "pino": "^9.3.2",
+    "sql-template-strings": "^2.2.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  },
+  "scripts": {
+    "dev": "vercel dev",
+    "start": "node scripts/local-api.mjs",
+    "dev:local": "node scripts/local-api.mjs",
+    "dev:watch": "nodemon --watch api --watch scripts --ext js,mjs --exec node scripts/local-api.mjs"
+  },
+  "llm_table_registry": "./config/llm_table_registry.json"
+}
