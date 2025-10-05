@@ -1,6 +1,6 @@
 // Frontend API service for calling the backend
-// Backend is deployed separately - using the latest deployment
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'https://backend-ftlvk6s9o-jacks-projects-34425aab.vercel.app';
+// Backend is deployed separately at thallos-llm-service.vercel.app
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'https://thallos-llm-service.vercel.app';
 
 export interface QueryResponse {
   answer: string;
