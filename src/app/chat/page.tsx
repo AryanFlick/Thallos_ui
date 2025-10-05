@@ -7,6 +7,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import WalletPromptModal from "@/components/WalletPromptModal";
 import WalletPortfolio from "@/components/WalletPortfolio";
+import { queryBackendStream, StreamChunk } from "@/lib/api";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -18,6 +19,10 @@ interface Message {
   text: string;
   isUser: boolean;
   timestamp: Date;
+  sql?: string;
+  rows?: Record<string, unknown>[];
+  intent?: string;
+  source?: string;
 }
 
 interface Conversation {
@@ -41,7 +46,20 @@ export default function ChatPage() {
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWalletPrompt, setShowWalletPrompt] = useState(false);
+  const [expandedDebug, setExpandedDebug] = useState<Set<string>>(new Set());
   const router = useRouter();
+
+  const toggleDebug = (messageId: string) => {
+    setExpandedDebug(prev => {
+      const next = new Set(prev);
+      if (next.has(messageId)) {
+        next.delete(messageId);
+      } else {
+        next.add(messageId);
+      }
+      return next;
+    });
+  };
 
   const handleSignOut = async () => {
     await supabase.auth.signOut();
@@ -321,93 +339,91 @@ export default function ChatPage() {
     setInputValue('');
     setIsTyping(true);
 
-    try {
-      // Get auth token for rate limiting
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      const response = await fetch('/api/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(session?.access_token && {
-            'Authorization': `Bearer ${session.access_token}`
-          })
-        },
-        body: JSON.stringify({
-          message: messageText,
-          conversationHistory: messages.map(msg => ({
-            isUser: msg.isUser,
-            text: msg.text,
-          })),
-        }),
-      });
+    // Create a placeholder AI message that will be updated as stream progresses
+    const aiMessageId = (Date.now() + 1).toString();
+    const aiMessage: Message = {
+      id: aiMessageId,
+      text: '',
+      isUser: false,
+      timestamp: new Date(),
+    };
+    setMessages(prev => [...prev, aiMessage]);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        
-        // Handle rate limiting specifically
-        if (response.status === 429) {
-          // Check if it's the monthly query limit
-          if (errorData.error === 'Monthly query limit reached') {
-            const errorMessage: Message = {
-              id: (Date.now() + 1).toString(),
-              text: `You've reached your monthly limit of ${errorData.monthlyLimit} queries. Upgrade to Pro for unlimited access to Thallos AI.`,
-              isUser: false,
-              timestamp: new Date(),
-            };
-            setMessages(prev => [...prev, errorMessage]);
-            
-            // Show upgrade prompt after a short delay
-            setTimeout(() => {
-              if (confirm('You\'ve reached your monthly query limit. Would you like to upgrade to Pro for unlimited queries?')) {
-                router.push('/profile?section=billing');
-              }
-            }, 500);
-            
-            setIsTyping(false);
-            return;
-          }
-          
-          // Handle regular rate limiting
-          const remaining = response.headers.get('X-RateLimit-Remaining');
-          const retryAfter = response.headers.get('Retry-After');
-          
-          throw new Error(
-            errorData.error || 
-            `Rate limit exceeded. ${remaining ? `${remaining} requests remaining.` : ''} ${retryAfter ? `Try again in ${retryAfter} seconds.` : ''}`
-          );
+    try {
+      let sql: string | undefined;
+      let rows: Record<string, unknown>[] | undefined;
+      let intent: string | undefined;
+      let answerText = '';
+
+      // Stream the response from the backend
+      for await (const chunk of queryBackendStream(messageText)) {
+        if (chunk.type === 'sql') {
+          sql = chunk.sql;
+          // Update message with SQL
+          setMessages(prev => prev.map(msg => 
+            msg.id === aiMessageId 
+              ? { ...msg, sql: chunk.sql }
+              : msg
+          ));
+        } else if (chunk.type === 'rows') {
+          rows = chunk.rows;
+          // Update message with rows
+          setMessages(prev => prev.map(msg => 
+            msg.id === aiMessageId 
+              ? { ...msg, rows: chunk.rows }
+              : msg
+          ));
+        } else if (chunk.type === 'answer_chunk' && chunk.content) {
+          answerText += chunk.content;
+          // Update message text with streaming content
+          setMessages(prev => prev.map(msg => 
+            msg.id === aiMessageId 
+              ? { ...msg, text: answerText }
+              : msg
+          ));
+        } else if (chunk.type === 'done') {
+          intent = chunk.intent;
+          // Final update
+          setMessages(prev => prev.map(msg => 
+            msg.id === aiMessageId 
+              ? { ...msg, intent: chunk.intent, source: 'database_query' }
+              : msg
+          ));
+        } else if (chunk.type === 'error') {
+          throw new Error(chunk.error || 'Failed to get response from backend');
         }
-        
-        throw new Error(errorData.error || 'Failed to get AI response');
       }
 
-      const data = await response.json();
-      
-      const aiMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: data.response,
-        isUser: false,
-        timestamp: new Date(),
+      // Get the final message for saving
+      const finalAiMessage = {
+        ...aiMessage,
+        text: answerText,
+        sql,
+        rows,
+        intent,
+        source: 'database_query'
       };
-      
-      setMessages(prev => [...prev, aiMessage]);
-      
+
       // Auto-save the conversation
-      await saveConversation(userMessage, aiMessage);
+      await saveConversation(userMessage, finalAiMessage);
       
     } catch (error) {
       console.error('Error getting AI response:', error);
-      const errorMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        text: 'Sorry, I encountered an error. Please try again.',
-        isUser: false,
-        timestamp: new Date(),
-      };
+      const errorMessage = error instanceof Error ? error.message : 'Sorry, I encountered an error. Please try again.';
       
-      setMessages(prev => [...prev, errorMessage]);
+      // Update the AI message with error
+      setMessages(prev => prev.map(msg => 
+        msg.id === aiMessageId 
+          ? { ...msg, text: errorMessage, source: 'error' }
+          : msg
+      ));
       
       // Save even on error to preserve the conversation
-      await saveConversation(userMessage, errorMessage);
+      const finalAiMessage = {
+        ...aiMessage,
+        text: errorMessage,
+      };
+      await saveConversation(userMessage, finalAiMessage);
     } finally {
       setIsTyping(false);
     }
@@ -573,22 +589,64 @@ export default function ChatPage() {
                               {message.isUser ? (
                                 <p className="whitespace-pre-wrap">{message.text}</p>
                               ) : (
-                                <div
-                                className="prose prose-invert prose-sm max-w-none"
-                                  dangerouslySetInnerHTML={{
-                                    __html: message.text
-                                    .replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-400">$1</strong>')
-                                      .replace(/\*(.*?)\*/g, '<em>$1</em>')
-                                    .replace(/`(.*?)`/g, '<code class="bg-gray-700 px-1 py-0.5 rounded text-emerald-300">$1</code>')
-                                      .replace(/### (.*?)(\n|$)/g, '<h3 class="text-lg font-bold text-white mt-4 mb-2">$1</h3>')
-                                      .replace(/## (.*?)(\n|$)/g, '<h2 class="text-xl font-bold text-white mt-4 mb-2">$1</h2>')
-                                      .replace(/# (.*?)(\n|$)/g, '<h1 class="text-2xl font-bold text-white mt-4 mb-2">$1</h1>')
-                                    .replace(/^\d+\.\s/gm, '<span class="text-emerald-400 font-semibold">$&</span>')
-                                    .replace(/^-\s/gm, '<span class="text-emerald-400">•</span> ')
-                                      .replace(/\n\n/g, '</p><p class="mt-3">')
-                                      .replace(/\n/g, '<br/>')
-                                  }}
-                                />
+                                <>
+                                  <div
+                                  className="prose prose-invert prose-sm max-w-none"
+                                    dangerouslySetInnerHTML={{
+                                      __html: message.text
+                                      .replace(/\*\*(.*?)\*\*/g, '<strong class="text-emerald-400">$1</strong>')
+                                        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                                      .replace(/`(.*?)`/g, '<code class="bg-gray-700 px-1 py-0.5 rounded text-emerald-300">$1</code>')
+                                        .replace(/### (.*?)(\n|$)/g, '<h3 class="text-lg font-bold text-white mt-4 mb-2">$1</h3>')
+                                        .replace(/## (.*?)(\n|$)/g, '<h2 class="text-xl font-bold text-white mt-4 mb-2">$1</h2>')
+                                        .replace(/# (.*?)(\n|$)/g, '<h1 class="text-2xl font-bold text-white mt-4 mb-2">$1</h1>')
+                                      .replace(/^\d+\.\s/gm, '<span class="text-emerald-400 font-semibold">$&</span>')
+                                      .replace(/^-\s/gm, '<span class="text-emerald-400">•</span> ')
+                                        .replace(/\n\n/g, '</p><p class="mt-3">')
+                                        .replace(/\n/g, '<br/>')
+                                    }}
+                                  />
+                                  {/* Debug Button */}
+                                  {(message.sql || message.rows || message.intent) && (
+                                    <div className="mt-3 pt-3 border-t border-gray-700/50">
+                                      <button
+                                        onClick={() => toggleDebug(message.id)}
+                                        className="text-xs text-gray-400 hover:text-emerald-400 transition-colors flex items-center gap-1"
+                                      >
+                                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor">
+                                          <path strokeLinecap="round" strokeLinejoin="round" d="M11.25 11.25l.041-.02a.75.75 0 011.063.852l-.708 2.836a.75.75 0 001.063.853l.041-.021M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9-3.75h.008v.008H12V8.25z" />
+                                        </svg>
+                                        Debug Info
+                                      </button>
+                                      {expandedDebug.has(message.id) && (
+                                        <div className="mt-2 space-y-2">
+                                          {message.intent && (
+                                            <div className="text-xs">
+                                              <span className="text-gray-400">Intent:</span>
+                                              <span className="ml-2 text-emerald-400">{message.intent}</span>
+                                            </div>
+                                          )}
+                                          {message.sql && (
+                                            <div className="text-xs">
+                                              <span className="text-gray-400">SQL:</span>
+                                              <pre className="mt-1 p-2 bg-gray-900 rounded text-emerald-300 overflow-x-auto">
+                                                {message.sql}
+                                              </pre>
+                                            </div>
+                                          )}
+                                          {message.rows && message.rows.length > 0 && (
+                                            <div className="text-xs">
+                                              <span className="text-gray-400">Data ({message.rows.length} rows):</span>
+                                              <pre className="mt-1 p-2 bg-gray-900 rounded text-emerald-300 overflow-x-auto max-h-40">
+                                                {JSON.stringify(message.rows.slice(0, 5), null, 2)}
+                                              </pre>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </div>
                           </div>

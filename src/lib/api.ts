@@ -1,5 +1,7 @@
 // Frontend API service for calling the backend
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || 'http://localhost:3000';
+// Since backend is deployed as Vercel serverless functions in the same project,
+// we use relative paths (empty string means same origin)
+const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_URL || '';
 
 export interface QueryResponse {
   answer: string;
