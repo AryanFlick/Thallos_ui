@@ -104,14 +104,23 @@ export async function POST(request: NextRequest) {
         }
 
         // Update subscription status
+        // TypeScript types for Stripe Subscription don't include these fields in some versions
+        // but they exist at runtime, so we access them safely
+        const subscriptionData = subscription as unknown as {
+          current_period_start?: number;
+          current_period_end?: number;
+        };
+        const periodStart = subscriptionData.current_period_start;
+        const periodEnd = subscriptionData.current_period_end;
+        
         const { error } = await supabase
           .from('user_subscriptions')
           .update({
             stripe_subscription_id: subscription.id,
             status: subscription.status,
             plan: 'pro',
-            current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-            current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+            current_period_start: periodStart ? new Date(periodStart * 1000).toISOString() : new Date().toISOString(),
+            current_period_end: periodEnd ? new Date(periodEnd * 1000).toISOString() : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
             updated_at: new Date().toISOString(),
           })
           .eq('user_id', existingSubscription.user_id);
