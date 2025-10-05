@@ -60,7 +60,8 @@ export default async function handler(req, res) {
   ].filter(Boolean);
   
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+  // Allow configured origins or any Vercel deployment
+  if (allowedOrigins.includes(origin) || (origin && origin.includes('.vercel.app'))) {
     res.setHeader('Access-Control-Allow-Origin', origin);
   }
   
