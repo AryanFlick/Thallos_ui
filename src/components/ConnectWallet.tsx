@@ -16,14 +16,20 @@ export default function ConnectWallet() {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<string>("");
   const [messageType, setMessageType] = useState<"success" | "error" | "">("");
+  const [processedWallet, setProcessedWallet] = useState<string>("");
 
   useEffect(() => {
     const handleWalletConnected = async () => {
-      if (!isConnected || !address || !chainId || isLoading) return;
+      if (!isConnected || !address || !chainId) return;
+      
+      // Prevent processing the same wallet twice
+      const walletKey = `${address}-${chainId}`;
+      if (isLoading || processedWallet === walletKey) return;
 
       setIsLoading(true);
       setMessage("");
       setMessageType("");
+      setProcessedWallet(walletKey);
 
       try {
         const { data: { session }, error: sessionError } = await supabase.auth.getSession();
@@ -49,25 +55,33 @@ export default function ConnectWallet() {
         if (response.ok) {
           setMessage(result.message || "Wallet connected successfully!");
           setMessageType("success");
+          setIsLoading(false);
           
+          // Reload after showing success message
           setTimeout(() => {
             window.location.reload();
           }, 1500);
         } else {
-          setMessage(result.error || "Failed to connect wallet");
-          setMessageType("error");
+          // Handle "already connected" as success
+          if (result.error?.includes('already connected')) {
+            setMessage("Wallet already connected");
+            setMessageType("success");
+          } else {
+            setMessage(result.error || "Failed to connect wallet");
+            setMessageType("error");
+          }
+          setIsLoading(false);
         }
       } catch (error) {
         console.error("Error connecting wallet:", error);
         setMessage("Failed to connect wallet");
         setMessageType("error");
-      } finally {
         setIsLoading(false);
       }
     };
 
     handleWalletConnected();
-  }, [isConnected, address, chainId, isLoading]);
+  }, [isConnected, address, chainId]);
 
   return (
     <div className="space-y-4">
