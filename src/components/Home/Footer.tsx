@@ -108,13 +108,13 @@ export default function Footer() {
                 © 2024 Thallos. All rights reserved.
               </div>
               <div className="flex space-x-6 mt-4 md:mt-0">
-                <a href="#" className="text-gray-500 hover:text-emerald-400 transition-colors duration-300 text-sm">
+                <a href="/privacy" className="text-gray-500 hover:text-emerald-400 transition-colors duration-300 text-sm">
                   Privacy Policy
                 </a>
-                <a href="#" className="text-gray-500 hover:text-emerald-400 transition-colors duration-300 text-sm">
+                <a href="/terms" className="text-gray-500 hover:text-emerald-400 transition-colors duration-300 text-sm">
                   Terms of Service
                 </a>
-                <a href="#" className="text-gray-500 hover:text-emerald-400 transition-colors duration-300 text-sm">
+                <a href="/terms#investment-risks" className="text-gray-500 hover:text-emerald-400 transition-colors duration-300 text-sm">
                   Risk Disclosure
                 </a>
               </div>
