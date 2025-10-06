@@ -206,7 +206,7 @@ export default function TermsOfServicePage() {
                 <section>
                   <h2 className="text-2xl font-bold text-emerald-400 mb-4">Changes to Terms</h2>
                   <p className="text-gray-300">
-                    We reserve the right to modify these Terms at any time. We will notify you of any material changes by posting the updated Terms on our website and updating the "Last updated" date. Your continued use of our services after such changes constitutes acceptance of the updated Terms.
+                    We reserve the right to modify these Terms at any time. We will notify you of any material changes by posting the updated Terms on our website and updating the &quot;Last updated&quot; date. Your continued use of our services after such changes constitutes acceptance of the updated Terms.
                   </p>
                 </section>
 

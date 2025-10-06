@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
                 <section>
                   <h2 className="text-2xl font-bold text-emerald-400 mb-4">Introduction</h2>
                   <p className="text-gray-300 leading-relaxed">
-                    At Thallos ("we," "our," or "us"), we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our institutional DeFi platform and services.
+                    At Thallos (&quot;we,&quot; &quot;our,&quot; or &quot;us&quot;), we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our institutional DeFi platform and services.
                   </p>
                 </section>
 
@@ -191,7 +191,7 @@ export default function PrivacyPolicyPage() {
                 <section>
                   <h2 className="text-2xl font-bold text-emerald-400 mb-4">Changes to This Privacy Policy</h2>
                   <p className="text-gray-300">
-                    We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new Privacy Policy on our website and updating the "Last updated" date. Your continued use of our services after such changes constitutes acceptance of the updated policy.
+                    We may update this Privacy Policy from time to time. We will notify you of any material changes by posting the new Privacy Policy on our website and updating the &quot;Last updated&quot; date. Your continued use of our services after such changes constitutes acceptance of the updated policy.
                   </p>
                 </section>
 
